@@ -27,4 +27,11 @@ enum {
 
 // SerialInitialise - initialise the serial port
 // Input: baud rate as defined in the enum
-void SerialInitialise(uint32_t baudRate, SerialPort *serial_port, void (*completion_function)(uint32_t) );
+void SerialInitialise(uint32_t baudRate, SerialPort *serial_port, void (*transmit_complete_function)(uint32_t),  void (*receive_complete_function)(uint8_t, uint32_t));
+void SerialOutputChar(uint8_t data, SerialPort *serial_port);
+
+void SerialReceiveChar(uint8_t *pt, SerialPort *serial_port);
+
+void SerialReceiveString(uint8_t *buffer, SerialPort *serial_port, uint8_t buffer_size, uint8_t terminator);
+
+#endif

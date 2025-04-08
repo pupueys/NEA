@@ -1,0 +1,2 @@
+../Src/interrupts.c:7:6:USART1_IRQHandler	1
+../Src/interrupts.c:14:6:terminator_interrupt	1

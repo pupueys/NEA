@@ -1,8 +1,8 @@
-#include "serial.h"
+	#include "serial.h"
 
-#include "stm32f303xc.h"
+	#include "stm32f303xc.h"
 
-#include <stdint.h>
+	#include <stdint.h>
 
 // We store the pointers to the GPIO and USART that are used
 //  for a specific serial port. To add another serial port
@@ -17,7 +17,8 @@ struct _SerialPort {
 	volatile uint32_t SerialPinSpeedValue;
 	volatile uint32_t SerialPinAlternatePinValueLow;
 	volatile uint32_t SerialPinAlternatePinValueHigh;
-	void (*completion_function)(uint32_t);
+	void (*transmit_complete_function)(uint32_t);
+	void (*receive_complete_function)(uint8_t, uint32_t);
 };
 
 
@@ -39,9 +40,11 @@ SerialPort USART1_PORT = {USART1,
 
 // InitialiseSerial - Initialise the serial port
 // Input: baudRate is from an enumerated set
-void SerialInitialise(uint32_t baudRate, SerialPort *serial_port, void (*completion_function)(uint32_t)) {
+void SerialInitialise(uint32_t baudRate, SerialPort *serial_port, void (*transmit_complete_function)(uint32_t),  void (*receive_complete_function)(uint8_t, uint32_t)) {
 
-	serial_port->completion_function = completion_function;
+	serial_port->transmit_complete_function = transmit_complete_function;
+	serial_port->receive_complete_function = receive_complete_function;
+
 
 	// enable clock power, system configuration clock and GPIOC
 	// common to all UARTs
@@ -71,20 +74,16 @@ void SerialInitialise(uint32_t baudRate, SerialPort *serial_port, void (*complet
 	// Baud rate calculation from datasheet
 	switch(baudRate){
 	case BAUD_9600:
-		// NEED TO FIX THIS !
-		*baud_rate_config = 0x46;  // 115200 at 8MHz
+		*baud_rate_config = 0x342;  // 9600 at 8MHz
 		break;
 	case BAUD_19200:
-		// NEED TO FIX THIS !
-		*baud_rate_config = 0x46;  // 115200 at 8MHz
+		*baud_rate_config = 0x19C;  // 19200 at 8MHz
 		break;
 	case BAUD_38400:
-		// NEED TO FIX THIS !
-		*baud_rate_config = 0x46;  // 115200 at 8MHz
+		*baud_rate_config = 0xD0;  // 38400 at 8MHz
 		break;
 	case BAUD_57600:
-		// NEED TO FIX THIS !
-		*baud_rate_config = 0x46;  // 115200 at 8MHz
+		*baud_rate_config = 0x8B;  // 57600 at 8MHz
 		break;
 	case BAUD_115200:
 		*baud_rate_config = 0x46;  // 115200 at 8MHz
@@ -93,5 +92,73 @@ void SerialInitialise(uint32_t baudRate, SerialPort *serial_port, void (*complet
 
 
 	// enable serial port for tx and rx
-	serial_port->UART->CR1 |= USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
+	serial_port->UART->CR1 |= USART_CR1_TE | USART_CR1_RE | USART_CR1_UE | USART_CR1_RXNEIE;
 }
+
+void SerialOutputChar(uint8_t data, SerialPort *serial_port) {
+
+	while((serial_port->UART->ISR & USART_ISR_TXE) == 0){
+	}
+
+	serial_port->UART->TDR = data;
+}
+
+
+
+void SerialOutputString(uint8_t *pt, SerialPort *serial_port) {
+
+	uint32_t counter = 0;
+	while(*pt) {
+		SerialOutputChar(*pt, serial_port);
+		counter++;
+		pt++;
+	}
+
+	serial_port->transmit_complete_function(counter);
+}
+
+// Function to receive a character
+void SerialReceiveChar(uint8_t *pt, SerialPort *serial_port) {
+
+	while((serial_port->UART->ISR & USART_ISR_RXNE) == 0){
+	}
+
+	*pt = (uint8_t)(serial_port->UART->RDR);
+}
+
+
+void SerialReceiveString(uint8_t *buffer, SerialPort *serial_port, uint8_t buffer_size, uint8_t terminator) {
+
+	uint8_t *buffer_base = buffer;
+	uint32_t counter = 0;
+	char current_char = 0;
+
+	while (current_char != terminator) {
+
+		// Storing the read character into the buffer
+		SerialReceiveChar(buffer, serial_port);
+
+		// Counting the amount of characters in the string
+		counter++;
+		buffer++;
+
+		if (counter == buffer_size) {
+			buffer = buffer_base;
+			counter = 0;
+		}
+		else {
+			continue;
+		}
+
+	}
+
+	buffer = buffer_base;
+
+	//serial_port->receive_complete_function(buffer, counter);
+}
+
+
+
+
+
+
