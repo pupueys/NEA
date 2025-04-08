@@ -49,13 +49,15 @@ void received_new_string(uint8_t *buffer, uint32_t bytes_sent) {
 
 }
 
+// Buffer for receiving
+volatile uint8_t buffer[BUFFER_SIZE];
+volatile uint32_t index = 0;
+
 int main(void)
 {
 
  	SerialInitialise(BAUD_115200, &USART1_PORT, &finished_transmission, &received_new_string);
 
-	volatile uint8_t buffer[BUFFER_SIZE];
-	volatile uint32_t index = 0;
 
     /* Loop forever */
 	for(;;) {

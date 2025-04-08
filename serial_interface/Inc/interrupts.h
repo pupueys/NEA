@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+
+void USART1_IRQHandler(void);
+
 void terminator_interrupt();
 
 #endif
