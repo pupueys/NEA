@@ -3,32 +3,27 @@
 #include "serial.h"
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #define BUFFER_SIZE 64
 #define TERMINATOR '!'
 
-extern volatile uint8_t buffer[BUFFER_SIZE];  // Declare the external buffer
+extern volatile char buffer[BUFFER_SIZE];  // Declare the external buffer
 extern volatile uint32_t index;            // Declare the external buffer index
 
 void USART1_IRQHandler(void) {
-
-	uint32_t counter = 0
 
 	// checking if there is a character to be read
 	if (USART1->ISR & USART_ISR_RXNE) {
 		uint8_t received_byte = (uint8_t)(USART1->RDR);	// reading received byte
 
-		if (index < BUFFER_SIZE) {
-			buffer[index++] = received_byte;
-			counter++;
-		}
+	}  if (index < BUFFER_SIZE) {
+		buffer[index++] = received_byte;
 
-		if (received_byte == TERMINATOR || buffer_index == BUFFER_SIZE) {
-			index = 0;
-		}
+	}  if (received_byte == TERMINATOR || buffer_index == BUFFER_SIZE) {
 
-		// callback
-		serial_port->receive_complete_function(buffer, counter);
+		serial_port->receive_complete_function(buffer, index);
+	}
 
 
 	}
