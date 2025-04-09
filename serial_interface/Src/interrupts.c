@@ -25,8 +25,8 @@ void rx_function(SerialPort *serial_port) {
 
 	// checking if receiving is working properly
 	if (!((serial_port->UART->ISR & USART_ISR_RXNE) == 0) &&
-		(serial_port->UART->ISR & USART_ISR_FE) == 0 &&
-		(serial_port->UART->ISR & USART_ISR_ORE) == 0) {
+		(serial_port->UART->ISR & USART_ISR_ORE) == 0) &&
+		(serial_port->UART->ISR & USART_ISR_FE) == 0  {
 
 		// reading the character into the buffer
 		serial_port->Buffer[serial_port->Count] = (uint8_t)(serial_port->UART->RDR);
