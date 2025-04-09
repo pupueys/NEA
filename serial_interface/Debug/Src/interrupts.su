@@ -1,2 +1,3 @@
-../Src/interrupts.c:7:6:USART1_IRQHandler	4	static
-../Src/interrupts.c:14:6:terminator_interrupt	4	static,ignoring_inline_asm
+../Src/interrupts.c:5:6:USART1_EXTI25_IRQHandler	8	static
+../Src/interrupts.c:20:6:rx_function	24	static
+../Src/interrupts.c:63:6:tx_function	16	static

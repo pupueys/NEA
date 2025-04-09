@@ -1,51 +1,42 @@
-#include <stdint.h>
-#include <stdio.h>
-
 #include "serial.h"
 
 #include "stm32f303xc.h"
-
-
-// We store the pointers to the GPIO and USART that are used
-//  for a specific serial port. To add another serial port
-//  you need to select the appropriate values.
-struct _SerialPort {
-	USART_TypeDef *UART;
-	GPIO_TypeDef *GPIO;
-	volatile uint32_t MaskAPB2ENR;	// mask to enable RCC APB2 bus registers
-	volatile uint32_t MaskAPB1ENR;	// mask to enable RCC APB1 bus registers
-	volatile uint32_t MaskAHBENR;	// mask to enable RCC AHB bus registers
-	volatile uint32_t SerialPinModeValue;
-	volatile uint32_t SerialPinSpeedValue;
-	volatile uint32_t SerialPinAlternatePinValueLow;
-	volatile uint32_t SerialPinAlternatePinValueHigh;
-	void (*transmit_complete_function)(uint32_t);
-	void (*receive_complete_function)(uint8_t, uint32_t);
-};
-
-
 
 // instantiate the serial port parameters
 //   note: the complexity is hidden in the c file
 SerialPort USART1_PORT = {USART1,
 		GPIOC,
-		RCC_APB2ENR_USART1EN, // bit to enable for APB2 bus
-		0x00,	// bit to enable for APB1 bus
-		RCC_AHBENR_GPIOCEN, // bit to enable for AHB bus
-		0xA00,
-		0xF00,
-		0x770000,  // for USART1 PC10 and 11, this is in the AFR low register
-		0x00, // no change to the high alternate function register
-		0x00 // default function pointer is NULL
+		RCC_APB2ENR_USART1EN, 	// bit to enable for APB2 bus
+		0x00,					// bit to enable for APB1 bus
+		RCC_AHBENR_GPIOCEN, 	// bit to enable for AHB bus
+		0xA00,					// bits to set alternate function
+		0xF00,					// bits to set high speed mode
+		0x770000,  				// for USART1 PC10 and 11, this is in the AFR low register
+		0x00, 					// no change to the high alternate function register
+		0x00, 					// buffer pointer NULL
+		0x00,					// second buffer pointer NULL
+		0x00, 					// count NULL
+		0x00,					// buffer size NULL
+		0x00,					// tx pointer NULL
+		USART1_IRQn,			// IRQn for USART1
+		0x00 					// callback function pointer is NULL
 		};
 
 
 // InitialiseSerial - Initialise the serial port
 // Input: baudRate is from an enumerated set
-void SerialInitialise(uint32_t baudRate, SerialPort *serial_port, void (*transmit_complete_function)(uint32_t),  void (*receive_complete_function)(uint8_t, uint32_t)) {
+void SerialInitialise(uint32_t buffer_size,
+					  uint32_t baudRate,
+					  SerialPort *serial_port,
+					  void (*rx_complete)(volatile uint8_t*, uint32_t)) {
 
-	serial_port->transmit_complete_function = transmit_complete_function;
-	serial_port->receive_complete_function = receive_complete_function;
+	// buffer_size: size of the buffers
+	// baudRate: the serial baud rate
+	// serial_port: address of the serial port to initialise
+	// rx_complete_function: pointer to callback function; inputs are pointer to string buffer
+	//						 and length of the stored string respectively
+
+	serial_port->callback = rx_complete;
 
 
 	// enable clock power, system configuration clock and GPIOC
@@ -94,7 +85,25 @@ void SerialInitialise(uint32_t baudRate, SerialPort *serial_port, void (*transmi
 
 
 	// enable serial port for tx and rx
-	serial_port->UART->CR1 |= USART_CR1_TE | USART_CR1_RE | USART_CR1_UE | USART_CR1_RXNEIE;
+	serial_port->UART->CR1 |= USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
+
+	// configuring buffers
+	serial_port->BufferSize = buffer_size;
+	serial_port->Buffer = (volatile uint8_t*)malloc(serial_port->BufferSize * sizeof(uint8_t));
+	serial_port->SecondBuffer = (volatile uint8_t*)malloc(serial_port->BufferSize * sizeof(uint8_t));
+
+	__disable_irq(); // disable all interrupts while changing settings
+
+	// enabling the interrupts
+	serial_port->UART->CR1 |= USART_CR1_RXNEIE;		// enabling RXNE interrupts
+	serial_port->UART->CR3 |= USART_CR3_EIE;		// enabling the error interrupts
+
+	// activating interrupts and setting priority
+	NVIC_SetPriority(serial_port->UART_IRQn, 5);
+	NVIC_EnableIRQ(serial_port->UART_IRQn);			//  enable UART interrupts
+
+	__enable_irq(); // re-enable all interrupts
+
 }
 
 void SerialOutputChar(uint8_t data, SerialPort *serial_port) {
@@ -115,8 +124,6 @@ void SerialOutputString(uint8_t *pt, SerialPort *serial_port) {
 		counter++;
 		pt++;
 	}
-
-	serial_port->transmit_complete_function(counter);
 }
 
 // Function to receive a character
@@ -126,37 +133,36 @@ void SerialReceiveChar(uint8_t *pt, SerialPort *serial_port) {
 	}
 
 	*pt = (uint8_t)(serial_port->UART->RDR);
+
 }
 
 
-void SerialReceiveString(uint8_t *buffer, SerialPort *serial_port, uint8_t buffer_size, uint8_t terminator) {
+void SerialReceiveString(uint8_t *buffer,
+						 SerialPort *serial_port,
+						 uint8_t buffer_size,
+						 uint8_t terminator) {
 
-	uint8_t *buffer_base = buffer;
-	uint32_t counter = 0;
-	char current_char = 0;
+    uint8_t *buffer_base = buffer;
+    uint32_t counter = 0;
+    uint8_t received_char;
 
-	while (current_char != terminator) {
+    do {
+        SerialReceiveChar(&received_char, serial_port);
+        *buffer = received_char;
 
-		// Storing the read character into the buffer
-		SerialReceiveChar(buffer, serial_port);
+        counter++;
+        buffer++;
 
-		// Counting the amount of characters in the string
-		counter++;
-		buffer++;
+        if (counter == buffer_size) {
+            buffer = buffer_base;
+            counter = 0;
+        }
 
-		if (counter == buffer_size) {
-			buffer = buffer_base;
-			counter = 0;
-		}
-		else {
-			continue;
-		}
+    } while (received_char != terminator);
 
-	}
+    buffer = buffer_base;
 
-	buffer = buffer_base;
-
-	//serial_port->receive_complete_function(buffer, counter);
+    serial_port->callback(buffer, counter);
 }
 
 

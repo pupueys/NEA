@@ -1,48 +1,82 @@
 #include "interrupts.h"
-#include "stm32f303xc.h"
-#include "serial.h"
 
-#include <stdint.h>
-#include <stdlib.h>
-
-#define BUFFER_SIZE 64
 #define TERMINATOR '!'
 
-extern volatile char buffer[BUFFER_SIZE];  // Declare the external buffer
-extern volatile uint32_t index;            // Declare the external buffer index
+void USART1_EXTI25_IRQHandler(void) {
 
-void USART1_IRQHandler(void) {
+	/*  Handler for the USART1 interrupts
+	 *  Activates rx_function if interrupt is triggered
+	 	Activates tx_function when transmit interrupt is triggered */
 
-	// checking if there is a character to be read
-	if (USART1->ISR & USART_ISR_RXNE) {
-		uint8_t received_byte = (uint8_t)(USART1->RDR);	// reading received byte
+	// when interrupt is reached, call the rx_function
+	rx_function(&USART1_PORT);
 
-	}  if (index < BUFFER_SIZE) {
-		buffer[index++] = received_byte;
-
-	}  if (received_byte == TERMINATOR || buffer_index == BUFFER_SIZE) {
-
-		serial_port->receive_complete_function(buffer, index);
-	}
-
-
+	// transmit if and only if the transmit interrupt TXEIE is triggered
+	if ((USART1->CR1 & USART_CR1_TXEIE) == 1) {
+		tx_function(&USART1_PORT);
 	}
 }
 
-void usart_interrupt(USART_TypeDef *USART) {
+void rx_function(SerialPort *serial_port) {
 
-	// disabling all interrupts
-	__disable_irq();
+	/* This function is called when the RXNE interrupt is triggered.
+	 * If the buffer is filled, the double buffers will switch, with the second buffer
+	 * being able to receive, while the other buffer can be used */
 
-    USART->CR1 |= USART_CR1_RXNEIE;  // RXNE interrupt enable
+	// checking if receiving is working properly
+	if (!((serial_port->UART->ISR & USART_ISR_RXNE) == 0) &&
+		(serial_port->UART->ISR & USART_ISR_FE) == 0 &&
+		(serial_port->UART->ISR & USART_ISR_ORE) == 0) {
 
-    // Enable the USART peripheral
-    USART->CR1 |= USART_CR1_UE;  // USART Enable
+		// reading the character into the buffer
+		serial_port->Buffer[serial_port->Count] = (uint8_t)(serial_port->UART->RDR);
+		serial_port->Count++;
 
-    // Telling NVIC module that USART1 interrupts should be handled
-    NVIC_SetPriority(USART1_IRQn, 1);
-    NVIC_EnableIRQ(USART1_IRQn);
+		// if the buffer has been filled, append the terminating character
+		if (serial_port->Count + 1 == serial_port->BufferSize) {
 
-	__enable_irq();
+			serial_port->Buffer[serial_port->Count] = TERMINATOR;
+			serial_port->Count++;
+		}
+
+		// if the terminating character has been read, reading is complete and callback occurs
+		// (extension) swap the buffers
+		if (serial_port->Buffer[serial_port->Count - 1 ] == TERMINATOR) {
+
+			volatile uint8_t* temp_pt = serial_port->Buffer;
+			serial_port->Buffer = serial_port->SecondBuffer;
+			serial_port->SecondBuffer = temp_pt;
+
+			// callback with the first buffer since the first buffer is finished reading
+			serial_port->callback(temp_pt, serial_port->Count);
+			serial_port->Count = 0;
+		}
+
+	}	else {
+		// clear error flags
+			serial_port->UART->ICR |= USART_ICR_ORECF | USART_ICR_FECF;
+
+	}
 
 }
+
+void tx_function(SerialPort *serial_port) {
+
+	/* This function is called when the TXE interrupt is enabled.
+	   If this was triggered intentionally, a character will be placed in the TDR
+	 */
+
+	// checking for terminating character
+	if (serial_port->TxPointer == TERMINATOR) {
+
+		serial_port->UART->TDR = TERMINATOR;
+	}
+
+
+
+	// transmit character
+	serial_port->UART->TDR = *serial_port->TxPointer;
+	serial_port->TxPointer++;
+}
+
+
