@@ -67,9 +67,6 @@ void Timer_OneShot(uint32_t delay_ms, void (*callback)(void)) {
 
     TIM2->CNT = 0;        // Reset timer counter
 
-    NVIC_EnableIRQ();
-
-
 }
 
 
