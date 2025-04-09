@@ -5,24 +5,23 @@
 
 
 static void (*timer_callback)(void) = NULL;   // Static = private to this file
-static uint32_t timer_interval_ticks = 0;      // Also private
 static uint8_t oneshot_enabled = 0;  // 0 = normal mode, 1 = one-shot mode
 
 
 
 void Timer_Init(uint32_t interval_ms, void (*callback)(void)) {
 
-	timer_interval_ticks = 10 * interval_ms;
-	timer_callback = callback;
-
     RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;	// Enable timer clock
 
 	TIM2->PSC = 799;         // 8MHz / 800 = 10kHz
-	TIM2->ARR = 0xffffffff;
+	TIM2->ARR = (10* interval_ms) - 1;
 	TIM2->CNT = 0;
 
-	TIM2->EGR |= TIM_EGR_UG;  // <-- Force update event to apply prescaler NOW!
+    TIM2->DIER |= TIM_DIER_UIE;           // Enable update interrupt
+    NVIC_EnableIRQ(TIM2_IRQn);            // Enable TIM2 interrupt at CPU/NVIC level
 
+    timer_callback = callback;
+    oneshot_enabled = 0;                  // Default = periodic mode
 
 	TIM2->CR1 |= TIM_CR1_CEN;  // Start timer
 
@@ -31,45 +30,39 @@ void Timer_Init(uint32_t interval_ms, void (*callback)(void)) {
 
 
 
-// Function to call regularly (polling)
-void Timer_Update(void) {
-
-	if(TIM2->CNT >= timer_interval_ticks) {
-		TIM2->CNT = 0;
-
-		if (timer_callback != NULL) {
-		    timer_callback();
-		}
-
-		if (oneshot_enabled) {
-			oneshot_enabled = 0;
-			timer_callback = NULL;
-		}
-	}
-}
-
 void Timer_SetPeriod(uint32_t new_interval_ms) {
-	timer_interval_ticks = new_interval_ms * 10;
+    TIM2->ARR = (10 * new_interval_ms) - 1;  // Update ARR
 	TIM2->CNT = 0;
 }
 
 
 uint32_t Timer_GetPeriod(void) {
 
-	return timer_interval_ticks / 10;	// return in ms
+    return (TIM2->ARR + 1) / 10;  // Return in ms
 }
 
 void Timer_OneShot(uint32_t delay_ms, void (*callback)(void)) {
-	timer_interval_ticks = 10 * delay_ms;
-	timer_callback = callback;
+	TIM2->ARR = (10 * delay_ms) - 1;
+	TIM2->CNT = 0;
 
+	timer_callback = callback;
     oneshot_enabled = 1;  // Enable one-shot mode
 
-    TIM2->CNT = 0;        // Reset timer counter
+}
 
-    NVIC_EnableIRQ();
+void TIM2_IRQHandler(void) {
+    if (TIM2->SR & TIM_SR_UIF) {       // Check if update interrupt flag is set
+        TIM2->SR &= ~TIM_SR_UIF;        // Clear UIF flag immediately
 
+        if (timer_callback != NULL) {  // If a callback is registered
+            timer_callback();          // Call the user function
+        }
 
+        if (oneshot_enabled) {         // If it’s a one-shot timer
+            timer_callback = NULL;     // Disable the callback
+            TIM2->DIER &= ~TIM_DIER_UIE;  // Disable future timer interrupts
+        }
+    }
 }
 
 

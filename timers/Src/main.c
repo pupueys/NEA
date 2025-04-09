@@ -32,8 +32,7 @@
 void enable_clocks() {
 
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOCEN | RCC_AHBENR_GPIOEEN;
-	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
-
+	// Dont enable timer clock here, does it in timer_init
 }
 
 // initialise the discovery board I/O (just outputs: inputs are selected by default)
@@ -79,16 +78,15 @@ int main(void)
 
 
 	while(1) {
-		Timer_Update();
 
 		static uint32_t counter = 0;
 		counter++;
 
-		//if(counter == 1200000) {
-		//	Timer_SetPeriod(2000);
-			//Timer_OneShot(3000, led_oneshot_callback);	// not working right now fix
+		if(counter == 1200000) {
+			//Timer_SetPeriod(2000);
+			Timer_OneShot(3000, led_oneshot_callback);	// not working right now fix
 
-		//}
+		}
 
 	}
 
