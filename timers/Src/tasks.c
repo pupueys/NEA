@@ -48,6 +48,7 @@ void Timer_OneShot(uint32_t delay_ms, void (*callback)(void)) {
 	timer_callback = callback;
     oneshot_enabled = 1;  // Enable one-shot mode
 
+<<<<<<< HEAD
 }
 
 void TIM2_IRQHandler(void) {
@@ -63,6 +64,10 @@ void TIM2_IRQHandler(void) {
             TIM2->DIER &= ~TIM_DIER_UIE;  // Disable future timer interrupts
         }
     }
+=======
+    TIM2->CNT = 0;        // Reset timer counter
+
+>>>>>>> a8f27c088c5d3f8fe6f053a69a58927ed3429b67
 }
 
 
