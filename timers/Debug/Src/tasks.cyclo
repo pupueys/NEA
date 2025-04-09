@@ -1,0 +1,5 @@
+../Src/tasks.c:13:6:Timer_Init	1
+../Src/tasks.c:34:6:Timer_Update	4
+../Src/tasks.c:50:6:Timer_SetPeriod	1
+../Src/tasks.c:56:10:Timer_GetPeriod	1
+../Src/tasks.c:61:6:Timer_OneShot	1

@@ -1,0 +1,5 @@
+../Src/main.c:32:6:enable_clocks	1
+../Src/main.c:40:6:initialise_board	1
+../Src/main.c:48:6:led_callback	2
+../Src/main.c:61:6:led_oneshot_callback	1
+../Src/main.c:71:5:main	1
