@@ -67,7 +67,6 @@ void TIM2_IRQHandler(void) {
 =======
     TIM2->CNT = 0;        // Reset timer counter
 
->>>>>>> a8f27c088c5d3f8fe6f053a69a58927ed3429b67
 }
 
 
