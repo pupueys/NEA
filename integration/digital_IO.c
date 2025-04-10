@@ -6,8 +6,6 @@
 // enable the clocks for desired peripherals (GPIOA, C and E)
 void enable_clocks() {
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOCEN | RCC_AHBENR_GPIOEEN;
-
-	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;           // enable clock for timer 3
 }
 
 
