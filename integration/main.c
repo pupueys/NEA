@@ -2,23 +2,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "set_get_leds.h"
+#include "digital_IO.h"
 
 #define BUFFER_SIZE 128
 
-uint8_t led_case(char *restofwords) {
-    uint8_t value = 0;
-    int i = 0;
-
-    while (restofwords[i] != '\0' && i < 8) { // Only process 8 bits
-        value <<= 1; // Shift left
-        if (restofwords[i] == '1') {
-            value |= 1;
-        }
-        i++;
-    }
-
-    return value;
-}
 
 uint32_t timers_case(char* restofwords) {
     uint32_t value = 0;
@@ -34,8 +22,9 @@ uint32_t timers_case(char* restofwords) {
 
 
 int main() {
+	// Manual test buffer NEED TO CHANGE THIS TO INPUT FROM SERIAL PORTS
+	char buffer[BUFFER_SIZE] = "led 10101010";  // Manual test input
 
-    char buffer[BUFFER_SIZE];   // total string length is 127 characters + \0
     char firstword[8];  //the largest operation word is "oneshot" + 1 (\0)
     char restofwords[BUFFER_SIZE - 8];  // allows up to 119 characters for words (for serial function) + \0
 
@@ -53,26 +42,17 @@ int main() {
 
     firstword[i] = '\0';
     restofwords[BUFFER_SIZE - 8 - 1] = '\0';
+    strcpy(restofwords, buffer + i + 1);
 
     if(strcmp(firstword, "led") == 0) {
         uint8_t led_pattern = led_case(restofwords);
-        //TODO
+        enable_clocks();                         // enable the clocks
+        initialise_board();                      // initialise the boards
+        set_led_state(led_pattern);
 
     }
 
-    if(strcmp(firstword, "serial") == 0) {
-        //TODO (just pass restofwords)
-    }
+    for (volatile int j = 0; j < 1000000; j++);
 
-    if(strcmp(firstword, "oneshot") == 0) {
-        uint32_t oneshot_delay = timers_case(restofwords);
-        Timer_OneShot(oneshot_delay, led_oneshot_callback); //requires uint32
-    }
-
-    if(strcmp(firstword, "timer") == 0) {
-        uint32_t timer_delay = timers_case(restofwords);    //requires uint32
-        Timer_Init(timer_delay, led_callback);
-    }
-
-    
 }
+
