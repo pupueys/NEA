@@ -1,10 +1,9 @@
 #include "digital_io.h"
 #include "stm32f303xc.h"
+#include "set_get_leds.h"
 #include "timer.h"
-// part 1 This is the independent module that handles the encapsulates the digital I/O interface
 
-// LED state set to static so that it is only accessible in this file
-static volatile uint8_t led_state = 1;
+// part 1 This is the independent module that handles the encapsulates the digital I/O interface
 
 // store a pointer to the function that is called when a button is pressed
 // set a default value of NULL so that it won't be called until the
@@ -57,7 +56,7 @@ void enable_interrupt() {
 
 void EXTI0_IRQHandler(void)
 {
-    button_pressed_flag = 1;  // Mark that button was pressed
+    button_pressed_flag = 1;  // Raise the button presses flag
 	// run the button press handler (make sure it is not null first !)
 	if (on_button_press != 0x00) {
 		on_button_press();
@@ -70,32 +69,21 @@ void EXTI0_IRQHandler(void)
 
 // Accept callback function in digital_io
 void digital_io(callback chase_led) {
-	on_button_press = chase_led;             // on_button_press is assigned to callback function chase_led
+	on_button_press = chase_led;             // on_button_press is now pointing at the callback function
 	enable_clocks();                         // enable the clocks
 	initialise_board();                      // initialise the boards
-	enable_button_interrupt();
+	enable_timer_interrupt();                // enable the interrupt for timers
 	enable_interrupt();                      // enable the button press interrupt
 }
 
 
 void chase_led() {
     if (led_change_flag==1) {
-        led_state <<= 1;  // Move to the next LED
+        led_state <<= 1;                         // Left shift the LEDs so the next one turns on
         if (led_state == 0) {
-            led_state = 1;  // Reset to the first LED if all LEDs are off
+            led_state = 1;                       // Reset to the first LED if all LEDs are off
         }
-        GPIOE->ODR = (GPIOE->ODR & 0x00FF) | (led_state << 8);  // Update hardware
-        led_change_flag = 0;  // Reset the flag
+        GPIOE->ODR = (GPIOE->ODR & 0x00FF) | (led_state << 8);  // Update the LED pattern to the ODR
+        led_change_flag = 0;                                    // Reset the LED change flag to 0 so that the process can repeat again
     }
-}
-
-// Get the current LED state
-uint8_t get_led_state(void) {
-	return led_state;                         // return the current led state stored in led_state
-}
-
-// Set the LED state manually
-void set_led_state(uint8_t state) {                // pass in a uint8_t value which represents the LED state
-	led_state = state;                             // set the input of the function to the led_state
-	*((uint8_t*)&(GPIOE->ODR) + 1) = led_state;    // update the LED state to the ODR
 }
