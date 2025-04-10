@@ -25,8 +25,8 @@ void rx_function(SerialPort *serial_port) {
 
 	// checking if receiving is working properly
 	if (!((serial_port->UART->ISR & USART_ISR_RXNE) == 0) &&
-		(serial_port->UART->ISR & USART_ISR_ORE) == 0) &&
-		(serial_port->UART->ISR & USART_ISR_FE) == 0  {
+		(serial_port->UART->ISR & USART_ISR_ORE) == 0 &&
+		(serial_port->UART->ISR & USART_ISR_FE) == 0)  {
 
 		// reading the character into the buffer
 		serial_port->Buffer[serial_port->Count] = (uint8_t)(serial_port->UART->RDR);
@@ -60,6 +60,26 @@ void rx_function(SerialPort *serial_port) {
 
 }
 
+void tx_enable(bool flag, SerialPort *serial_port) {
+	/* Given a flag, the transmission interrupt will be enabled/disabled */
+	__disable_irq();
+
+	if (flag == true) {
+		serial_port->UART->CR1 |= USART_CR1_TXEIE;
+	} else {
+		serial_port->UART->CR1 |= ~USART_CR1_TXEIE;
+	}
+
+	__enable_irq();
+}
+
+void tx_string(uint8_t *str, SerialPort *serial_port) {
+
+	serial_port->TxPointer = str;
+	tx_enable(true, serial_port);
+
+}
+
 void tx_function(SerialPort *serial_port) {
 
 	/* This function is called when the TXE interrupt is enabled.
@@ -70,6 +90,7 @@ void tx_function(SerialPort *serial_port) {
 	if (serial_port->TxPointer == TERMINATOR) {
 
 		serial_port->UART->TDR = TERMINATOR;
+		tx_enable(false, serial_port);
 	}
 
 
