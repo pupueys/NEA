@@ -12,4 +12,12 @@ void parse_buffer(volatile uint8_t *buffer, uint32_t size) {
 		return;
 	}
 
+	if ((strncmp(buffer, "led ", 4) == 0)) {
+
+                uint8_t led_pattern = led_case(buffer + 4);
+                enable_clocks();                         // enable the clocks
+                initialise_board();                      // initialise the boards
+                set_led_state(led_pattern);
+	}
+
 }
