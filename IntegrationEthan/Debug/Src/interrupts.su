@@ -1,0 +1,5 @@
+../Src/interrupts.c:5:6:USART1_EXTI25_IRQHandler	8	static
+../Src/interrupts.c:20:6:rx_function	24	static
+../Src/interrupts.c:63:6:tx_enable	16	static,ignoring_inline_asm
+../Src/interrupts.c:76:6:tx_string	16	static
+../Src/interrupts.c:83:6:tx_function	16	static

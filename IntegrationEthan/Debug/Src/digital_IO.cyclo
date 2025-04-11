@@ -1,0 +1,3 @@
+../Src/digital_IO.c:7:6:enable_clocks	1
+../Src/digital_IO.c:13:6:initialise_board	1
+../Src/digital_IO.c:19:9:led_case	4
