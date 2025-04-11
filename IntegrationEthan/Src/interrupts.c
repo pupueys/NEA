@@ -12,7 +12,7 @@ void USART1_EXTI25_IRQHandler(void) {
 	rx_function(&USART1_PORT);
 
 	// transmit if and only if the transmit interrupt TXEIE is triggered
-	if ((USART1->CR1 & USART_CR1_TXEIE) == 1) {
+	if (!(USART1->CR1 & USART_CR1_TXEIE) == 0) {
 		tx_function(&USART1_PORT);
 	}
 }
@@ -48,7 +48,7 @@ void rx_function(SerialPort *serial_port) {
 			serial_port->SecondBuffer = temp_pt;
 
 			// callback with the first buffer since the first buffer is finished reading
-			serial_port->callback(temp_pt, serial_port->Count);
+			serial_port->callback(serial_port->SecondBuffer, serial_port->Count);
 			serial_port->Count = 0;
 		}
 
@@ -67,7 +67,7 @@ void tx_enable(bool flag, SerialPort *serial_port) {
 	if (flag == true) {
 		serial_port->UART->CR1 |= USART_CR1_TXEIE;
 	} else {
-		serial_port->UART->CR1 |= ~USART_CR1_TXEIE;
+		serial_port->UART->CR1 &= ~USART_CR1_TXEIE;
 	}
 
 	__enable_irq();
@@ -87,7 +87,7 @@ void tx_function(SerialPort *serial_port) {
 	 */
 
 	// checking for terminating character
-	if (serial_port->TxPointer == TERMINATOR) {
+	if (*(serial_port->TxPointer) == TERMINATOR) {
 
 		serial_port->UART->TDR = TERMINATOR;
 		tx_enable(false, serial_port);

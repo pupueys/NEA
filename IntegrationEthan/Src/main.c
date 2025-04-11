@@ -3,13 +3,16 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+
+#include "stm32f303xc.h"
 #include "set_get_leds.h"
 #include "digital_IO.h"
+#include "serial.h"
+#include "interrupts.h"
 #include "parse.h"
 
 #define BUFFER_SIZE 128
 #define TERMINATOR '\0'
-
 
 uint32_t timers_case(char* restofwords) {
     uint32_t value = 0;
