@@ -2,7 +2,7 @@
 ../Inc/core_cm4.h:1816:22:__NVIC_SetPriority	16	static
 ../Src/serial.c:29:6:SerialInitialise	32	static,ignoring_inline_asm
 ../Src/serial.c:110:6:USART1_EXTI25_IRQHandler	8	static
-../Src/serial.c:125:6:rx_function	24	static
-../Src/serial.c:164:6:tx_enable	16	static,ignoring_inline_asm
-../Src/serial.c:177:6:tx_string	16	static
-../Src/serial.c:184:6:tx_function	16	static
+../Src/serial.c:121:6:rx_function	24	static
+../Src/serial.c:160:6:tx_enable	16	static,ignoring_inline_asm
+../Src/serial.c:174:6:tx_string	16	static
+../Src/serial.c:182:6:tx_function	16	static

@@ -109,10 +109,6 @@ void SerialInitialise(uint32_t buffer_size,
 
 void USART1_EXTI25_IRQHandler(void) {
 
-	/*  Handler for the USART1 interrupts
-	 *  Activates rx_function if interrupt is triggered
-	 	Activates tx_function when transmit interrupt is triggered */
-
 	// when interrupt is reached, call the rx_function
 	rx_function(&USART1_PORT);
 

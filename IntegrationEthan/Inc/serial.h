@@ -48,7 +48,9 @@ enum {
 /* Initialises the specified serial port and the receiving serial interrupts*/
 void SerialInitialise(uint32_t buffer_size, uint32_t baudRate, SerialPort *serial_port, void (*callback)(volatile uint8_t*, uint32_t));
 
-/* Handler for USART1 interrupts*/
+/*  Handler for the USART1 interrupts
+ *  Activates rx_function if interrupt is triggered
+ 	Activates tx_function when transmit interrupt is triggered */
 void USART1_EXTI25_IRQHandler(void);
 
 /* This function is called when the RXNE interrupt is triggered.

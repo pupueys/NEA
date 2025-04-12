@@ -37,17 +37,17 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_rnglists 000000c9  00000000  00000000  00004328  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_macro  00016277  00000000  00000000  000043f1  2**0
+ 17 .debug_macro  00016283  00000000  00000000  000043f1  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_line   0000259e  00000000  00000000  0001a668  2**0
+ 18 .debug_line   0000259e  00000000  00000000  0001a674  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    00076941  00000000  00000000  0001cc06  2**0
+ 19 .debug_str    00076958  00000000  00000000  0001cc12  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .comment      00000043  00000000  00000000  00093547  2**0
+ 20 .comment      00000043  00000000  00000000  0009356a  2**0
                   CONTENTS, READONLY
- 21 .debug_frame  0000061c  00000000  00000000  0009358c  2**2
+ 21 .debug_frame  0000061c  00000000  00000000  000935b0  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 22 .debug_line_str 00000081  00000000  00000000  00093ba8  2**0
+ 22 .debug_line_str 00000081  00000000  00000000  00093bcc  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -187,10 +187,10 @@ uint8_t led_case(char *restofwords) {
 	...
 
 0800026c <main>:
-//
-//    return value;
-//
-//}
+#include "parse.h"
+
+#define BUFFER_SIZE 128
+#define TERMINATOR '\0'
 
 int main() {
  800026c:	b580      	push	{r7, lr}
@@ -212,6 +212,9 @@ int main() {
 08000288 <parse_buffer>:
 #include "parse.h"
 
+#define SERIAL_ARG 7
+#define LED_ARG 4
+
 void parse_buffer(volatile uint8_t *buffer, uint32_t size) {
  8000288:	b580      	push	{r7, lr}
  800028a:	b084      	sub	sp, #16
@@ -219,11 +222,8 @@ void parse_buffer(volatile uint8_t *buffer, uint32_t size) {
  800028e:	6078      	str	r0, [r7, #4]
  8000290:	6039      	str	r1, [r7, #0]
 
-	/*  This callback function parses through the buffer
-	 *  to determine what is required to be done.
-	 */
-
-	if ((size >= 7 && strncmp((volatile uint8_t*)buffer, "serial ", 7) == 0)) {
+	// Checks if the argument is to transmit via serial
+	if ((size >= SERIAL_ARG && strncmp((volatile uint8_t*)buffer, "serial ", SERIAL_ARG) == 0)) {
  8000292:	683b      	ldr	r3, [r7, #0]
  8000294:	2b06      	cmp	r3, #6
  8000296:	d90e      	bls.n	80002b6 <parse_buffer+0x2e>
@@ -235,7 +235,7 @@ void parse_buffer(volatile uint8_t *buffer, uint32_t size) {
  80002a4:	2b00      	cmp	r3, #0
  80002a6:	d106      	bne.n	80002b6 <parse_buffer+0x2e>
 
-		tx_string((volatile uint8_t*)buffer + 7, &USART1_PORT);
+		tx_string((volatile uint8_t*)buffer + SERIAL_ARG, &USART1_PORT);
  80002a8:	687b      	ldr	r3, [r7, #4]
  80002aa:	3307      	adds	r3, #7
  80002ac:	4911      	ldr	r1, [pc, #68]	@ (80002f4 <parse_buffer+0x6c>)
@@ -245,7 +245,8 @@ void parse_buffer(volatile uint8_t *buffer, uint32_t size) {
  80002b4:	e019      	b.n	80002ea <parse_buffer+0x62>
 	}
 
-	if ((size >= 4 && strncmp((volatile uint8_t*)buffer, "led ", 4) == 0)) {
+	// Checks if the argument is to display leds
+	if ((size >= LED_ARG && strncmp((volatile uint8_t*)buffer, "led ", LED_ARG) == 0)) {
  80002b6:	683b      	ldr	r3, [r7, #0]
  80002b8:	2b03      	cmp	r3, #3
  80002ba:	d916      	bls.n	80002ea <parse_buffer+0x62>
@@ -257,7 +258,7 @@ void parse_buffer(volatile uint8_t *buffer, uint32_t size) {
  80002c8:	2b00      	cmp	r3, #0
  80002ca:	d10e      	bne.n	80002ea <parse_buffer+0x62>
 
-                uint8_t led_pattern = led_case((volatile uint8_t*)buffer + 4);
+                uint8_t led_pattern = led_case((volatile uint8_t*)buffer + LED_ARG);
  80002cc:	687b      	ldr	r3, [r7, #4]
  80002ce:	3304      	adds	r3, #4
  80002d0:	4618      	mov	r0, r3
@@ -632,9 +633,6 @@ __STATIC_FORCEINLINE void __disable_irq(void)
 void USART1_EXTI25_IRQHandler(void) {
  80004f8:	b580      	push	{r7, lr}
  80004fa:	af00      	add	r7, sp, #0
-	/*  Handler for the USART1 interrupts
-	 *  Activates rx_function if interrupt is triggered
-	 	Activates tx_function when transmit interrupt is triggered */
 
 	// when interrupt is reached, call the rx_function
 	rx_function(&USART1_PORT);
@@ -819,6 +817,7 @@ void tx_enable(bool flag, SerialPort *serial_port) {
 
 	__disable_irq();
 
+	// enabling the TXEIE interrupt if transmission is enabled
 	if (flag == true) {
  8000602:	79fb      	ldrb	r3, [r7, #7]
  8000604:	2b00      	cmp	r3, #0
@@ -833,7 +832,7 @@ void tx_enable(bool flag, SerialPort *serial_port) {
  8000616:	601a      	str	r2, [r3, #0]
  8000618:	e007      	b.n	800062a <tx_enable+0x38>
 	} else {
-		serial_port->UART->CR1 &= ~USART_CR1_TXEIE;
+		serial_port->UART->CR1 &= ~USART_CR1_TXEIE;	// ANDing with compliment to disable
  800061a:	683b      	ldr	r3, [r7, #0]
  800061c:	681b      	ldr	r3, [r3, #0]
  800061e:	681a      	ldr	r2, [r3, #0]
@@ -864,6 +863,7 @@ void tx_string(uint8_t *str, SerialPort *serial_port) {
  8000640:	6078      	str	r0, [r7, #4]
  8000642:	6039      	str	r1, [r7, #0]
 
+	// set the transmission pointer to be the beginning of the string array
 	serial_port->TxPointer = str;
  8000644:	683b      	ldr	r3, [r7, #0]
  8000646:	687a      	ldr	r2, [r7, #4]
@@ -886,9 +886,6 @@ void tx_function(SerialPort *serial_port) {
  800065c:	b082      	sub	sp, #8
  800065e:	af00      	add	r7, sp, #0
  8000660:	6078      	str	r0, [r7, #4]
-	/* This function is called when the TXE interrupt is enabled.
-	   If this was triggered intentionally, a character will be placed in the TDR
-	 */
 
 	// checking for terminating character
 	if (*(serial_port->TxPointer) == TERMINATOR) {
@@ -904,13 +901,11 @@ void tx_function(SerialPort *serial_port) {
  8000670:	681b      	ldr	r3, [r3, #0]
  8000672:	2200      	movs	r2, #0
  8000674:	851a      	strh	r2, [r3, #40]	@ 0x28
-		tx_enable(false, serial_port);
+		tx_enable(false, serial_port);		// disable transmission interrupts
  8000676:	6879      	ldr	r1, [r7, #4]
  8000678:	2000      	movs	r0, #0
  800067a:	f7ff ffba 	bl	80005f2 <tx_enable>
 	}
-
-
 
 	// transmit character
 	serial_port->UART->TDR = *serial_port->TxPointer;

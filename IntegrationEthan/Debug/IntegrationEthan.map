@@ -1167,7 +1167,7 @@ LOAD C:/ST/STM32CubeIDE_1.17.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_rnglists
                 0x000000b0       0x19 ./Startup/startup_stm32f303vctx.o
 
-.debug_macro    0x00000000    0x16277
+.debug_macro    0x00000000    0x16283
  .debug_macro   0x00000000       0xd3 ./Src/digital_IO.o
  .debug_macro   0x000000d3      0xac0 ./Src/digital_IO.o
  .debug_macro   0x00000b93       0x22 ./Src/digital_IO.o
@@ -1211,11 +1211,11 @@ LOAD C:/ST/STM32CubeIDE_1.17.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_macro   0x00015921      0x146 ./Src/main.o
  .debug_macro   0x00015a67       0x16 ./Src/main.o
  .debug_macro   0x00015a7d       0x20 ./Src/main.o
- .debug_macro   0x00015a9d      0x229 ./Src/parse.o
- .debug_macro   0x00015cc6      0x1ad ./Src/serial.o
- .debug_macro   0x00015e73       0xc9 ./Src/set_get_leds.o
- .debug_macro   0x00015f3c       0xff ./Src/sysmem.o
- .debug_macro   0x0001603b      0x23c ./Src/sysmem.o
+ .debug_macro   0x00015a9d      0x235 ./Src/parse.o
+ .debug_macro   0x00015cd2      0x1ad ./Src/serial.o
+ .debug_macro   0x00015e7f       0xc9 ./Src/set_get_leds.o
+ .debug_macro   0x00015f48       0xff ./Src/sysmem.o
+ .debug_macro   0x00016047      0x23c ./Src/sysmem.o
 
 .debug_line     0x00000000     0x259e
  .debug_line    0x00000000      0x504 ./Src/digital_IO.o
@@ -1226,20 +1226,20 @@ LOAD C:/ST/STM32CubeIDE_1.17.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_line    0x00001faf      0x574 ./Src/sysmem.o
  .debug_line    0x00002523       0x7b ./Startup/startup_stm32f303vctx.o
 
-.debug_str      0x00000000    0x76941
+.debug_str      0x00000000    0x76958
  .debug_str     0x00000000    0x721eb ./Src/digital_IO.o
                               0x72386 (size before relaxing)
  .debug_str     0x000721eb     0x3d3b ./Src/main.o
                               0x7609f (size before relaxing)
- .debug_str     0x00075f26       0x3b ./Src/parse.o
-                              0x7609a (size before relaxing)
- .debug_str     0x00075f61      0x4a6 ./Src/serial.o
+ .debug_str     0x00075f26       0x52 ./Src/parse.o
+                              0x760b1 (size before relaxing)
+ .debug_str     0x00075f78      0x4a6 ./Src/serial.o
                               0x75fef (size before relaxing)
- .debug_str     0x00076407       0x24 ./Src/set_get_leds.o
+ .debug_str     0x0007641e       0x24 ./Src/set_get_leds.o
                               0x722e3 (size before relaxing)
- .debug_str     0x0007642b      0x4d7 ./Src/sysmem.o
+ .debug_str     0x00076442      0x4d7 ./Src/sysmem.o
                                0x6100 (size before relaxing)
- .debug_str     0x00076902       0x3f ./Startup/startup_stm32f303vctx.o
+ .debug_str     0x00076919       0x3f ./Startup/startup_stm32f303vctx.o
                                  0x9d (size before relaxing)
 
 .comment        0x00000000       0x43
