@@ -1,5 +1,4 @@
 "./Src/digital_IO.o"
-"./Src/interrupts.o"
 "./Src/main.o"
 "./Src/parse.o"
 "./Src/serial.o"

@@ -1,6 +1,7 @@
 #include "serial.h"
-
 #include "stm32f303xc.h"
+
+#define TERMINATOR '\0'
 
 // instantiate the serial port parameters
 //   note: the complexity is hidden in the c file
@@ -106,67 +107,94 @@ void SerialInitialise(uint32_t buffer_size,
 
 }
 
-void SerialOutputChar(uint8_t data, SerialPort *serial_port) {
+void USART1_EXTI25_IRQHandler(void) {
 
-	while((serial_port->UART->ISR & USART_ISR_TXE) == 0){
-	}
+	/*  Handler for the USART1 interrupts
+	 *  Activates rx_function if interrupt is triggered
+	 	Activates tx_function when transmit interrupt is triggered */
 
-	serial_port->UART->TDR = data;
-}
+	// when interrupt is reached, call the rx_function
+	rx_function(&USART1_PORT);
 
-
-
-void SerialOutputString(uint8_t *pt, SerialPort *serial_port) {
-
-	uint32_t counter = 0;
-	while(*pt) {
-		SerialOutputChar(*pt, serial_port);
-		counter++;
-		pt++;
+	// transmit if and only if the transmit interrupt TXEIE is triggered
+	if (!(USART1->CR1 & USART_CR1_TXEIE) == 0) {
+		tx_function(&USART1_PORT);
 	}
 }
 
-// Function to receive a character
-void SerialReceiveChar(uint8_t *pt, SerialPort *serial_port) {
+void rx_function(SerialPort *serial_port) {
 
-	while((serial_port->UART->ISR & USART_ISR_RXNE) == 0){
+	// checking if receiving is working properly
+	if (!((serial_port->UART->ISR & USART_ISR_RXNE) == 0) &&
+		(serial_port->UART->ISR & USART_ISR_ORE) == 0 &&
+		(serial_port->UART->ISR & USART_ISR_FE) == 0)  {
+
+		// reading the character into the buffer
+		serial_port->Buffer[serial_port->Count] = (uint8_t)(serial_port->UART->RDR);
+		serial_port->Count++;
+
+		// if the buffer has been filled, append the terminating character
+		if (serial_port->Count + 1 == serial_port->BufferSize) {
+
+			serial_port->Buffer[serial_port->Count] = TERMINATOR;
+			serial_port->Count++;
+		}
+
+		// if the terminating character has been read, reading is complete and callback occurs
+		// (extension) swap the buffers
+		if (serial_port->Buffer[serial_port->Count - 1 ] == TERMINATOR) {
+
+			volatile uint8_t* temp_pt = serial_port->Buffer;
+			serial_port->Buffer = serial_port->SecondBuffer;
+			serial_port->SecondBuffer = temp_pt;
+
+			// callback with the first buffer since the first buffer is finished reading
+			serial_port->callback(serial_port->SecondBuffer, serial_port->Count);
+			serial_port->Count = 0;
+		}
+
+	}	else {
+		// clear error flags
+			serial_port->UART->ICR |= USART_ICR_ORECF | USART_ICR_FECF;
+
 	}
 
-	*pt = (uint8_t)(serial_port->UART->RDR);
+}
+
+void tx_enable(bool flag, SerialPort *serial_port) {
+
+	__disable_irq();
+
+	// enabling the TXEIE interrupt if transmission is enabled
+	if (flag == true) {
+		serial_port->UART->CR1 |= USART_CR1_TXEIE;
+	} else {
+		serial_port->UART->CR1 &= ~USART_CR1_TXEIE;	// ANDing with compliment to disable
+	}
+
+	__enable_irq();
+}
+
+void tx_string(uint8_t *str, SerialPort *serial_port) {
+
+	// set the transmission pointer to be the beginning of the string array
+	serial_port->TxPointer = str;
+	tx_enable(true, serial_port);
 
 }
 
+void tx_function(SerialPort *serial_port) {
 
-void SerialReceiveString(uint8_t *buffer,
-						 SerialPort *serial_port,
-						 uint8_t buffer_size,
-						 uint8_t terminator) {
+	// checking for terminating character
+	if (*(serial_port->TxPointer) == TERMINATOR) {
 
-    uint8_t *buffer_base = buffer;
-    uint32_t counter = 0;
-    uint8_t received_char;
+		serial_port->UART->TDR = TERMINATOR;
+		tx_enable(false, serial_port);		// disable transmission interrupts
+	}
 
-    do {
-        SerialReceiveChar(&received_char, serial_port);
-        *buffer = received_char;
-
-        counter++;
-        buffer++;
-
-        if (counter == buffer_size) {
-            buffer = buffer_base;
-            counter = 0;
-        }
-
-    } while (received_char != terminator);
-
-    buffer = buffer_base;
-
-    serial_port->callback(buffer, counter);
+	// transmit character
+	serial_port->UART->TDR = *serial_port->TxPointer;
+	serial_port->TxPointer++;
 }
-
-
-
-
 
 

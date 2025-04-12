@@ -6,7 +6,6 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Src/digital_IO.c \
-../Src/interrupts.c \
 ../Src/main.c \
 ../Src/parse.c \
 ../Src/serial.c \
@@ -16,7 +15,6 @@ C_SRCS += \
 
 OBJS += \
 ./Src/digital_IO.o \
-./Src/interrupts.o \
 ./Src/main.o \
 ./Src/parse.o \
 ./Src/serial.o \
@@ -26,7 +24,6 @@ OBJS += \
 
 C_DEPS += \
 ./Src/digital_IO.d \
-./Src/interrupts.d \
 ./Src/main.d \
 ./Src/parse.d \
 ./Src/serial.d \
@@ -42,7 +39,7 @@ Src/%.o Src/%.su Src/%.cyclo: ../Src/%.c Src/subdir.mk
 clean: clean-Src
 
 clean-Src:
-	-$(RM) ./Src/digital_IO.cyclo ./Src/digital_IO.d ./Src/digital_IO.o ./Src/digital_IO.su ./Src/interrupts.cyclo ./Src/interrupts.d ./Src/interrupts.o ./Src/interrupts.su ./Src/main.cyclo ./Src/main.d ./Src/main.o ./Src/main.su ./Src/parse.cyclo ./Src/parse.d ./Src/parse.o ./Src/parse.su ./Src/serial.cyclo ./Src/serial.d ./Src/serial.o ./Src/serial.su ./Src/set_get_leds.cyclo ./Src/set_get_leds.d ./Src/set_get_leds.o ./Src/set_get_leds.su ./Src/syscalls.cyclo ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.cyclo ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su
+	-$(RM) ./Src/digital_IO.cyclo ./Src/digital_IO.d ./Src/digital_IO.o ./Src/digital_IO.su ./Src/main.cyclo ./Src/main.d ./Src/main.o ./Src/main.su ./Src/parse.cyclo ./Src/parse.d ./Src/parse.o ./Src/parse.su ./Src/serial.cyclo ./Src/serial.d ./Src/serial.o ./Src/serial.su ./Src/set_get_leds.cyclo ./Src/set_get_leds.d ./Src/set_get_leds.o ./Src/set_get_leds.su ./Src/syscalls.cyclo ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.cyclo ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su
 
 .PHONY: clean-Src
 

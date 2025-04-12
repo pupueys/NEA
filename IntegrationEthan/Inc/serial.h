@@ -1,10 +1,11 @@
-#ifndef SERIAL_PORT_HEADER
-#define SERIAL_PORT_HEADER
+#ifndef SERIAL_HEADER
+#define SERIAL_HEADER
 
 #include "stm32f303xc.h"
 
 #include <stdint.h>
-#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
 // Defining the serial port struct
 typedef struct {
@@ -30,7 +31,6 @@ typedef struct {
 	void (*callback)(volatile uint8_t*, uint32_t);
 } SerialPort;
 
-
 // make any number of instances of the serial port (they are extern because
 //   they are fixed, unique values)
 extern SerialPort USART1_PORT;
@@ -45,15 +45,25 @@ enum {
   BAUD_115200
 };
 
-
-// SerialInitialise - initialise the serial port
-// Input: baud rate as defined in the enum
+/* Initialises the specified serial port and the receiving serial interrupts*/
 void SerialInitialise(uint32_t buffer_size, uint32_t baudRate, SerialPort *serial_port, void (*callback)(volatile uint8_t*, uint32_t));
-void SerialOutputChar(uint8_t data, SerialPort *serial_port);
-void SerialReceiveChar(uint8_t *pt, SerialPort *serial_port);
-void SerialReceiveString(uint8_t *buffer,
-						 SerialPort *serial_port,
-						 uint8_t buffer_size,
-						 uint8_t terminator);
+
+/* Handler for USART1 interrupts*/
+void USART1_EXTI25_IRQHandler(void);
+
+/* This function is called when the RXNE interrupt is triggered.
+	 * If the buffer is filled, the double buffers will switch, with the second buffer
+	 * being able to receive, while the other buffer can be used */
+void rx_function(SerialPort *serial_port);
+
+/* Given a flag, the transmission interrupt will be enabled/disabled */
+void tx_enable(bool flag, SerialPort *serial_port);
+
+/* Sets the input string to be transmitted*/
+void tx_string(uint8_t *str, SerialPort *serial_port);
+
+/* This function is called when the TXEIE interrupt is enabled*/
+void tx_function(SerialPort *serial_port);
+
 
 #endif
