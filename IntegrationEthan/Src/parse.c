@@ -6,15 +6,15 @@ void parse_buffer(volatile uint8_t *buffer, uint32_t size) {
 	 *  to determine what is required to be done.
 	 */
 
-	if ((strncmp(buffer, "serial ", 7) == 0)) {
+	if ((size >= 7 && strncmp((volatile uint8_t*)buffer, "serial ", 7) == 0)) {
 
-		tx_string(buffer + 7, &USART1_PORT);
+		tx_string((volatile uint8_t*)buffer + 7, &USART1_PORT);
 		return;
 	}
 
-	if ((strncmp(buffer, "led ", 4) == 0)) {
+	if ((size >= 4 && strncmp((volatile uint8_t*)buffer, "led ", 4) == 0)) {
 
-                uint8_t led_pattern = led_case(buffer + 4);
+                uint8_t led_pattern = led_case((volatile uint8_t*)buffer + 4);
                 enable_clocks();                         // enable the clocks
                 initialise_board();                      // initialise the boards
                 set_led_state(led_pattern);

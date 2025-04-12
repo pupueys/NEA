@@ -12,7 +12,7 @@
 #include "parse.h"
 
 #define BUFFER_SIZE 128
-#define TERMINATOR '\n'
+#define TERMINATOR '\0'
 
 uint32_t timers_case(char* restofwords) {
     uint32_t value = 0;

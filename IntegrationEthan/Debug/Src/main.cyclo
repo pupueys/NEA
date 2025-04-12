@@ -1,3 +1,2 @@
-../Src/main.c:17:6:parse_buffer	2
-../Src/main.c:31:10:timers_case	2
-../Src/main.c:42:5:main	1
+../Src/main.c:17:10:timers_case	2
+../Src/main.c:28:5:main	1

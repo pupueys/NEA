@@ -1,6 +1,6 @@
 #include "interrupts.h"
 
-#define TERMINATOR '\n'
+#define TERMINATOR '\0'
 
 void USART1_EXTI25_IRQHandler(void) {
 
