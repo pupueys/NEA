@@ -1,1 +1,31 @@
-/.metadata
+# Ignore build output
+/build/
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+*.d
+*.su
+*.cyclo
+
+# Eclipse settings (optional)
+.settings/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore temporary files
+*.tmp
+*.log
+*.bak
+*.swp
+
+# Ignore other IDE specific files
+.idea/
+.vscode/
+
+# --- DO NOT IGNORE .project and .cproject ---
+# (we want to track them)
