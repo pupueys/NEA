@@ -12,7 +12,6 @@
 #include "parse.h"
 
 #define BUFFER_SIZE 128
-#define TERMINATOR '\0'
 
 int main() {
 
