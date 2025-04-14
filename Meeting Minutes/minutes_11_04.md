@@ -13,7 +13,7 @@ Final meeting, Check the progress of integration Ex and make sure everything is 
 - Worked on completing and modularising the Exercise 4 integration.
 - Full integration tested successfully, confirming all parts (Digital I/O, Serial Communications, Timers) function as expected.
 - Confirmed that all lab tasks have been completed, tested and working.
-- 
+  
 #### Documentation and Presentation
 - Each team member was assigned to write the README for their respective exercises.
 - Also were asked to write the readme for their part of integration.
