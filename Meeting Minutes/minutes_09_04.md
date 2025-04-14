@@ -7,7 +7,7 @@
 - Nadeen
 
 ### Meeting Purpose:
-Review the tasks allcated, and work on Ex 4 integration.
+Review the tasks allocated, and work on Ex 4 integration.
   
 #### Review Previous Tasks
 - All previously allocated exercises were completed, checked, and tested successfully.
