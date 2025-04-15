@@ -2,7 +2,6 @@
 #include "stm32f303xc.h"
 #include "set_get_leds.h"
 #include "timer.h"
-
 // part 1 This is the independent module that handles the encapsulates the digital I/O interface
 
 // store a pointer to the function that is called when a button is pressed
@@ -56,7 +55,7 @@ void enable_interrupt() {
 
 void EXTI0_IRQHandler(void)
 {
-    button_pressed_flag = 1;  // Raise the button presses flag
+    button_pressed_flag = 1;  // Mark that button was pressed
 	// run the button press handler (make sure it is not null first !)
 	if (on_button_press != 0x00) {
 		on_button_press();
@@ -69,21 +68,23 @@ void EXTI0_IRQHandler(void)
 
 // Accept callback function in digital_io
 void digital_io(callback chase_led) {
-	on_button_press = chase_led;             // on_button_press is now pointing at the callback function
+	on_button_press = chase_led;             // on_button_press is assigned to callback function chase_led
 	enable_clocks();                         // enable the clocks
 	initialise_board();                      // initialise the boards
-	enable_timer_interrupt();                // enable the interrupt for timers
+	enable_timer_interrupt();
 	enable_interrupt();                      // enable the button press interrupt
+
 }
 
 
 void chase_led() {
     if (led_change_flag==1) {
-        led_state <<= 1;                         // Left shift the LEDs so the next one turns on
+        led_state <<= 1;  // Move to the next LED
         if (led_state == 0) {
-            led_state = 1;                       // Reset to the first LED if all LEDs are off
+            led_state = 1;  // Reset to the first LED if all LEDs are off
         }
-        GPIOE->ODR = (GPIOE->ODR & 0x00FF) | (led_state << 8);  // Update the LED pattern to the ODR
-        led_change_flag = 0;                                    // Reset the LED change flag to 0 so that the process can repeat again
+        GPIOE->ODR = (GPIOE->ODR & 0x00FF) | (led_state << 8);  // Update the ODR of the LED register
+        led_change_flag = 0;  // Reset the flag
     }
 }
+
