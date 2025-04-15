@@ -2,7 +2,7 @@
 #define DIGITAL_IO_H
 #include <stdint.h>
 
-// define the type of callback which is a function pointer that doesnot take any input or output
+// define the type of callback which is a function pointer that takes no input and gives no output
 typedef void (*callback)(void);
 
 
