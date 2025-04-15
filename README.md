@@ -93,8 +93,73 @@ Individual Module testing for each module is given bellow,
 - Keep pressing the button continuously and but make sure LEDs change only after a certain intervel of time regardless of the button press.
 - Use `set_led_state` to set a random pattern of LEDs and make sure it is reflected at the start of the program.
 
+## Serial Interface
+For this section, `serial.c` and the corresponding `serial.h` was used as a baseline. 
 
+### Set-up
+To set-up the STM for serial interfacing with a compter, use a Mini-USB to USB-A cable, connecting Mini-USB connector to the ST-Link port on the STM32F3 and connecting the USB-A connector to the computer. To interface with the computer, use PuTTY if using Windows and Cutecom if using MacOS. Ensure that the terminal is communicating via the correct COM serial device. On Windows, this can be done by checking Device Manager and looking for the COM port the STM32 is connected to. Furthermore, ensure that the baud rate matches that of the STM32.
 
+The baud rate for the STM32 is set in `main.c` as the second argument passed to `SerialInitialise`, with the syntax `BAUD_[baud rate]`. There are four baud rate options available to the user: 9600, 19200, 38400, 57600, 115200. For example, if the user wants to set the baud to 19200, the second argument of `SerialInitialise` should read `BAUD_19200`. Arguments of `baud_19200` or `BAUD_420` are invalid and must not be used.
+
+### Usage
+To transmit a message to the board, use a client such as PuTTY or Cutecom, ensuring the correct port and baud rate are set. Simply type the message into the terminal and complete it by appending `TERMINATOR`. If `TERMINATOR` is `'\0'`, input Ctrl+Shift+2 into the terminal (appends the terminating character).
+
+Similarly, to receive messages from the board, use a client such as PuTTY or Cutecom with the correct baud rate set. 
+
+### Receive Functionality
+The program utilises USART1 on the STM32F3 to communicate with a computer via a serial terminal. There are two modes for receiving; polling and via interrupts. To enable the polling mode, set `polling_flag = true` in `main.c`. This enables the `SerialReceiveString` function, which is the polling receive function for the STM32. 
+
+Messages are received until a user defined terminating character is received, which is `\0` by default (the null character). To set this terminating character, change the definition of `TERMINATOR` in `main.c`, i.e. `#define TERMINATOR '\0'` such that `TERMINATOR` is the desired terminating character, e.g. if the terminating character is to be set as '!', the line should read `#define TERMINATOR '!'`. 
+
+Essentially, the polling mode "waits" for a character to be received into the recieve data register (RDR), i.e. undergoes an infinite `while` loop until data is received. Once data is received, it is stored into the receive buffer and checks for the terminating character. If the terminating character is reached, it ends the receiving loop and returns to a callback function. Otherwise, the program remains in the programming loop. 
+
+To deactivate the polling mode, set `polling_flag = false` in `main.c`. This disables the `SerialReceiveString` function and instead now the program relies on interrupts to receive data. In this case, the double buffers within the `SerialPort` struct are used, switching modes every time a full string is received. More specifically, there are two buffers in the `SerialPort` struct, denoted `buffer` and `second_buffer`. Initially, data is read into `buffer` until a terminating character is received. Once the terminating character is received, the two buffers are "swapped" and now the `second_buffer` is used to receive any new characters. In the meantime, the data in `buffer` can be used for other routines such as parsing, transmission, etc. 
+
+### The Double Buffers
+As mentioned, double buffers are used to allow multiple actions to occur at once, e.g. receiving and manipluating two different buffers. These are stored as elements of the `SerialPort` struct, and have a user-defined buffer size which is mediated by `malloc` to initialise.
+
+### Transmit Functionality
+Similarly to Receive Functionality, the program uses USART1 to communicate via serial. There are also two modes; transmission via polling and transmission via interrupts.
+
+For the polling mode, the `SerialOutputString` function in `serial.c` outputs a character until a there is nothing to transmit, outputting whenever there is data ready to be transmitted in the transmit data register (TDR). The polling logic is exactly the same as in Receive Functionality.
+
+For the interrupt mode, the relevant functions are `tx_enable`, `tx_string` and `tx_function`, which are all found in `interrupts.c`. Unlike the Receive Functionality, however, transmission does not run all the time, and a flag must be set to enable/disable the transmission interrupts.
+- `tx_enable` initialises and enables the transmission interrupts when it is flagged.
+- `tx_string` initialises the transmission pointer to the beginning of the buffer, then calling `tx_function` to transmit the data.
+- `tx_function` sends the data to the TDR to be communicated via serial until a terminating character is reached, at which point transmission is disabled and the tranmission pointer is reset.  
+
+The transmission pointer is another element of the `SerialPort` struct, and is essentially a pointer that is used to point at a buffer that is to be transmitted, iterating through the buffer until specified otherwise. 
+
+### Testing
+- In the polling mode, to view where the final string is stored, place a breakpoint after the `do while` loop in the `SerialReceiveString` function in `serial.c`. 
+- In the interrupt mode, to view where the final string is stored/to view what is stored in the double buffers when receiving is done, 
+```c
+		if (serial_port->Buffer[serial_port->Count - 1 ] == TERMINATOR) {
+
+			volatile uint8_t* temp_pt = serial_port->Buffer;
+			serial_port->Buffer = serial_port->SecondBuffer;
+			serial_port->SecondBuffer = temp_pt;
+
+			// callback with the first buffer since the first buffer is finished reading
+			serial_port->callback(temp_pt, serial_port->Count);
+			serial_port->Count = 0;
+		}
+```
+place a breakpoint directly before the line `serial_port->callback(temp_pt, serial_port->Count);` in `rx_function`.
+
+## Integration
+All the modules culminate into the integration file, which showcases how the modules can be used as one cohesive program. 
+### Usage
+
+The user inputs one of the following commands into the terminal:
+- led {insert 8-bit binary LED bitmask} (e.g. led 01010101)
+- serial {insert string here} (e.g. serial Hello, World!)
+- oneshot {insert time in ms}
+- timer {insert time in ms}
+
+These inputs must all follow the syntax provided, otherwise no output will occur. The inputs must be appended with the null terminating character `\0`. 
+
+### Functionality
 
 
 
