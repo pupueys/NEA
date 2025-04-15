@@ -8,7 +8,7 @@
 #ifndef SET_GET_LEDS_H_
 #define SET_GET_LEDS_H_
 
-static volatile uint8_t led_state = 1;
+static volatile uint8_t led_state ;
 
 // header files for set_led_state and get_led_state if they were to be used in main.c
 uint8_t get_led_state(void);
