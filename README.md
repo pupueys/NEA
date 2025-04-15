@@ -24,7 +24,7 @@ This project First modularises the given code in week 5 to implement a clean sof
 - Blue User button in the STM32 board acts as the user input for changing the pattern of the LEDs
 - `uint8_t` starting with `0b` (if you want to enter the pattern in binary) is the user input in `set_led_state` function which sets the initial pattern of the LEDs.
 - Interger is the input in `TIM3->ARR  =  1` to set the reload value which changes the      speed at which the LED pattern changes. 
----
+
 
 ###  1.4 Functions and Modularity 
 #### 1.4.1 Digital_io.c / Digital_io.h
