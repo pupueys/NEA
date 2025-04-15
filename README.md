@@ -6,3 +6,5 @@ The MTRX2700 C Lab is an application of the knowledge gained from MTRX2700 - Mec
 Everything was written for and intended for the STM32F3 Discovery Board which utilises the Cortex-M3 ARM processor, and as such, everything is intended for only such hardware.
 
 # Modules and Submodules
+## Serial Interface
+For this section, `serial.c` and the corresponding `serial.h` was used as a baseline. 
