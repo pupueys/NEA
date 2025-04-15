@@ -8,7 +8,7 @@ int main(void)
 {
 
 	digital_io(&chase_led);                   // Address of the callback function is passed on the initialisation function
-        set_led_state(0b0000011);                 // Change this value to set the LEDs in a different pattern
+        set_led_state(0b0000001);                 // Change this value to set the LEDs in a different pattern
 
 
 	for(;;) {}
