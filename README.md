@@ -94,7 +94,7 @@ Individual Module testing for each module is given bellow,
 - Use `set_led_state` to set a random pattern of LEDs and make sure it is reflected at the start of the program.
 
 ## Serial Interface
-For this section, `serial.c` and the corresponding `serial.h` was used as a baseline. 
+For this section, `serial.c` and the corresponding `serial.h` from W06-modular-example was used as a baseline. 
 
 ### Set-up
 To set-up the STM for serial interfacing with a compter, use a Mini-USB to USB-A cable, connecting Mini-USB connector to the ST-Link port on the STM32F3 and connecting the USB-A connector to the computer. To interface with the computer, use PuTTY if using Windows and Cutecom if using MacOS. Ensure that the terminal is communicating via the correct COM serial device. On Windows, this can be done by checking Device Manager and looking for the COM port the STM32 is connected to. Furthermore, ensure that the baud rate matches that of the STM32.
