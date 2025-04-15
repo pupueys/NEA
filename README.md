@@ -7,5 +7,6 @@ Everything was written for and intended for the STM32F3 Discovery Board which ut
 
 
 # Modules and Submodules
+## Digital Input Output (Digital IO)
 ## Serial Interface
 For this section, `serial.c` and the corresponding `serial.h` was used as a baseline. 
