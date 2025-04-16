@@ -1,7 +1,8 @@
 #include "stm32f303xc.h"
 #include <stdint.h>
 #include <stddef.h>  // for NULL checking
-#include <tasks.h>
+#include <timers.h>
+#include <callbacks.h>
 
 
 static void (*timer_callback)(void) = NULL;   // Static = private to this file
@@ -15,17 +16,20 @@ void Timer_Init(uint32_t interval_ms, void (*callback)(void)) {
 
 	TIM2->PSC = 799;         // 8MHz / 800 = 10kHz
 	TIM2->ARR = (10* interval_ms) - 1;
-	TIM2->CNT = 0;
+
+	TIM2->CNT = 0;		// Reset timer count
+    TIM2->SR &= ~TIM_SR_UIF;               // Clear the Update Interrupt Flag
 
     TIM2->DIER |= TIM_DIER_UIE;           // Enable update interrupt
-    NVIC_EnableIRQ(TIM2_IRQn);            // Enable TIM2 interrupt at CPU/NVIC level
+    NVIC_EnableIRQ(TIM2_IRQn);            // Enable TIM2 interrupt in NVIC
 
     timer_callback = callback;
-    oneshot_enabled = 0;                  // Default = periodic mode
+    oneshot_enabled = 0;                  // Timer mode as default
 
+}
+
+void Timer_Start(void) {
 	TIM2->CR1 |= TIM_CR1_CEN;  // Start timer
-
-
 }
 
 
@@ -42,31 +46,26 @@ uint32_t Timer_GetPeriod(void) {
 }
 
 void Timer_OneShot(uint32_t delay_ms, void (*callback)(void)) {
+	turn_leds_off();
 	TIM2->ARR = (10 * delay_ms) - 1;
 	TIM2->CNT = 0;
 
 	timer_callback = callback;
     oneshot_enabled = 1;  // Enable one-shot mode
 
-<<<<<<< HEAD
 }
 
 void TIM2_IRQHandler(void) {
     if (TIM2->SR & TIM_SR_UIF) {       // Check if update interrupt flag is set
-        TIM2->SR &= ~TIM_SR_UIF;        // Clear UIF flag immediately
+        TIM2->SR &= ~TIM_SR_UIF;        // Clear UIF flag
 
-        if (timer_callback != NULL) {  // If a callback is registered
-            timer_callback();          // Call the user function
+        if (timer_callback != NULL) {
+            timer_callback();
         }
 
-        if (oneshot_enabled) {         // If it’s a one-shot timer
-            timer_callback = NULL;     // Disable the callback
+        if (oneshot_enabled) {
+            timer_callback = NULL;
             TIM2->DIER &= ~TIM_DIER_UIE;  // Disable future timer interrupts
         }
     }
-=======
-    TIM2->CNT = 0;        // Reset timer counter
-
 }
-
-
