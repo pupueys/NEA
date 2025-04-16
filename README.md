@@ -211,13 +211,13 @@ Timer_OneShot(5000, led_oneshot_callback); // Trigger after 5s
 - **Timer_OneShot(delay_ms, callback)**: Sets up a one-off timer event. After the delay, the callback is triggered and the timer stops itself.
 - **TIM2_IRQHandler()**: Checks the UIF flag, clears it, and calls the registered callback. If in one-shot mode, it disables the interrupt and clears the callback.
 
-All internal variables (e.g. timer_callback, oneshot_enabled) are declared static for encapsulation.
+All internal variables (e.g. `timer_callback`, `oneshot_enabled`) are declared static for encapsulation.
 
 ### Testing
 - Observe regular LED blinking for a known interval (e.g. 1Hz)
-- Call Timer_SetPeriod() during runtime and verify the change in LED blink frequency
-- Use Timer_OneShot() and verify that the LEDs only trigger once after the delay
-- Attempt triggering another Timer_OneShot() while one is active to test robustness
+- Call `Timer_SetPeriod()` during runtime and verify the change in LED blink frequency
+- Use `Timer_OneShot()` and verify that the LEDs only trigger once after the delay
+- Attempt triggering another `Timer_OneShot()` while one is active to test robustness
 
 
 ## Integration
