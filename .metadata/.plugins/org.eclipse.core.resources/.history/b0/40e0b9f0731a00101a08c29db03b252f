@@ -22,12 +22,17 @@ void rx_complete(volatile uint8_t* pt, uint32_t counter) {
 	// This function will be called after a transmission is complete
 	tx_string(pt, &USART1_PORT);
 
+//	volatile uint32_t test = 0;
+//	// make a very simple delay
+//	for (volatile uint32_t i = 0; i < 0x8ffff; i++) {
+//		// waste time !
+//	}
 }
 
 int main(void)
 {
 
-	bool polling_flag = false;
+	bool polling_flag = true;
 
  	SerialInitialise(BUFFER_SIZE, BAUD_115200, &USART1_PORT, &rx_complete);
 

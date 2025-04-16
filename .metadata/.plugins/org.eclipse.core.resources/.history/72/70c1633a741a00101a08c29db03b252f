@@ -27,7 +27,7 @@ void rx_complete(volatile uint8_t* pt, uint32_t counter) {
 int main(void)
 {
 
-	bool polling_flag = false;
+	bool polling_flag = true;
 
  	SerialInitialise(BUFFER_SIZE, BAUD_115200, &USART1_PORT, &rx_complete);
 

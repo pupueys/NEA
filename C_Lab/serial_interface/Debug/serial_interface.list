@@ -553,11 +553,7 @@ void rx_complete(volatile uint8_t* pt, uint32_t counter) {
  8000466:	4904      	ldr	r1, [pc, #16]	@ (8000478 <rx_complete+0x1c>)
  8000468:	6878      	ldr	r0, [r7, #4]
  800046a:	f7ff ffc5 	bl	80003f8 <tx_string>
-//	volatile uint32_t test = 0;
-//	// make a very simple delay
-//	for (volatile uint32_t i = 0; i < 0x8ffff; i++) {
-//		// waste time !
-//	}
+
 }
  800046e:	bf00      	nop
  8000470:	3708      	adds	r7, #8
