@@ -21,12 +21,12 @@ up regularly to check on task progress, and once complete, a meeting was held fo
 The program files can be found in the `C_Lab` folder and were named after their respective functionality. The minutes can be found in the `Meeting Minutes` folder.
 
 # Modules and Submodules
-## 1.Digital I/O module to interface LEDs and Button
-### 1.1 Summary
+## Digital I/O module to interface LEDs and Button
+### Summary
 ---
 This project First modularises the given code in week 5 to implement a clean software design that encapsulates digital I/O into reusable modules, allowing LED control and callback function for a button press on initialisation. It also has a module which allows the user to set the led in a certain pattern or get the current pattern using set/get function. Later timer interrupts are used to restrict the speed at which the LEDs change.
 
-### 1.2 Usage 
+### Usage 
 ---
 - Clone the repo into STM32CubeIDE and run the main file in the digitalIO folder (inside SRC).
 - Enter the pattern of LEDs you want to start with in the `set_led_state` function of main file. Use 0b before entering the pattern if you want to enter the pattern in binary.
@@ -34,15 +34,15 @@ This project First modularises the given code in week 5 to implement a clean sof
 - When the user button is pressed in the microcontroller the led pattern change to next possition with a rate limited by the timer.
 - The rate at which the LEDs change can be modified by changing the `TIM3->ARR  =  1; ` to a different value.
 
-### 1.3 Valid Input
+### Valid Input
 ---
 - Blue User button in the STM32 board acts as the user input for changing the pattern of the LEDs
 - `uint8_t` starting with `0b` (if you want to enter the pattern in binary) is the user input in `set_led_state` function which sets the initial pattern of the LEDs.
 - Interger is the input in `TIM3->ARR  =  1` to set the reload value which changes the      speed at which the LED pattern changes. 
 ---
 
-###  1.4 Functions and Modularity 
-#### _1.4.1 Digital_io.c / Digital_io.h_
+###  Functions and Modularity 
+#### Digital_io.c / Digital_io.h_
 This is the independent module that encapsulates the digital I/O interface  
 (button and LED) that was asked in task (a). This module sets up GPIO pins, enables the button interrupt, and allows passing of a callback function to respond to button presses.
 - `void  digital_io(callback  chase_led)` - This function is the entry point to the digital_io.c module. It takes the address of the callback function as the input and then uses the function pointer on_button_press to point at the address of the callback function that was passed in. Just changing the input address to a different function will change the function that is called by the button press. This function then calls the `enable_clocks()`,  `initialise_board()`, `enable_timer_interrupt()`, and `enable_interrupt()` functions.
@@ -55,7 +55,7 @@ This is the independent module that encapsulates the digital I/O interface
 
 In the header file for this module `void  digital_io(callback);` and `void  chase_led(void);` are defined. Also the type of callback which is a function pointer that takes no input and gives no output is defined. This is used as an input type for the digital_io function. The code for the same is given here `typedef  void  (*callback)(void);`
 
-#### _1.4.2 Set_get_leds.c / Set_get_leds.h_
+#### _Set_get_leds.c / Set_get_leds.h_
 This module incorporates the LED state into the module such that the only way to access it is through the header file using `get_led_state` and `set_led_state` functions.
 
 This module first uses `static volatile uint8_t led_state;` to define led_state as a uint8_t static variable. led_state set to static so that it is only accessible in this file. This led_state stores the state of the LEDs and is used to manipulate the LED pattern in other modules.
@@ -66,7 +66,7 @@ This module first uses `static volatile uint8_t led_state;` to define led_state 
 
 The header file for this module defines the functions mentioned above and additionally also defines the led_state as an extern variable. `static  volatile  uint8_t led_state ;` This is done so that led_state can be used in other functions like digital_io.c
 
-#### _1.4.3 Timer.c / Timer.h_
+#### _Timer.c / Timer.h_
 Timer module is used to restrict the speed at which the LEDs can change. In this module we use Interrupts rather than polling to restrict the speed. It sets a flag after a certain period of time using interrupts which is then checked in the callback function before changing the LED pattern.
 
 `volatile  uint8_t led_change_flag =  0;` and `volatile  uint8_t button_pressed_flag =  0;` is used to define 2 variables which are used as flags to decide if the led is ready to be changed and if the button is pressed respectively. Both of them are set to 0 during initialisation.
@@ -77,14 +77,14 @@ Timer module is used to restrict the speed at which the LEDs can change. In this
 
 The header file for this module just defines the above mentioned functions and the above mentioned variables as extern so that it can be used in other modules as well. 
 
-#### _1.4.4 Main.c_
+#### _Main.c_
 This is the entry point of this excercise where the `digital_io` function is called and an input of the address of callback function using `&chase_led` is sent. The digital_io then later will initialise and run the other important functions of the excercise. The main function also sets the initial LED pattern to 0b00000001 such that one led is turned on during initialisation. This is done using the following code, `set_led_state(0b0000011);`. Then the code loops for ever waiting for interuupts to oocur.
 
 
-### 1.5 Testing
+### Testing
 Individual Module testing for each module is given bellow,
 
-#### _1.5.1  Digital_io.c_
+#### _Digital_io.c_
 - Pressing the button repeatedly and check if it causes LEDs to shift correctly.
 - Check if LEDs respond only once per press.
 - Try using a different address as the input to the digital_io function to see if changing the callback function changes the function performed while button is pressed.
@@ -92,11 +92,11 @@ Individual Module testing for each module is given bellow,
 - Try using a different left shift value to see if the `chase_led` function is working as expected.
 - Mannualy set the led_change_flag to 0 and make sure the LEDs are not shifting when the button is pressed.
 
-#### _1.5.2  Set_get_leds.c_
+#### _Set_get_leds.c_
 - After few button presses try using the `get_led_state` to fetch the current state of the LEDs.
 - Try different inputs with the `set_led_state` function and make sure the LEDs turn on as expected.
 
-#### _1.5.3  timer.c_
+#### _timer.c_
 - Try using a different pre scaller value to see if the time between pattern change is changing accordingly. 
 - Do the same with the ARR to change the reload value to a different number to change the rate at which the interrupt is trigerred.
 - In the interrupt handler function mannualy set the button pressed flag to 0 and make sure the led_change_flag does not go up even when the timer interrupt is running.
