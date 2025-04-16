@@ -164,6 +164,62 @@ The transmission pointer is another element of the `SerialPort` struct, and is e
 ```
 place a breakpoint directly before the line `serial_port->callback(temp_pt, serial_port->Count);` in `rx_function`.
 
+## Timer Module
+---
+For this section, `main.c` from W06-C-timers was used as a baseline.
+
+### Summary
+This module demonstrates a clean, modular interface to the STM32F3’s hardware timer (TIM2), showcasing the use of function pointers for flexible callback behaviour. It supports:
+
+- **Periodic timer callbacks** at a user-specified interval
+- **Dynamic period updates** using setter/getter functions
+- **One-shot callbacks**, where a single delayed event is triggered
+
+All timer configuration and ISR logic is abstracted away from the main program, promoting separation of concerns and software modularity.
+
+### Set-up
+Ensure `timers.c`, `timers.h`, and `callbacks.c` are included in the project and compiled with your `main.c`. TIM2 is used exclusively, and the prescaler is configured for a base frequency of 10kHz.
+
+The timer runs off the APB1 clock (8MHz), with a prescaler of 799 resulting in a 10kHz tick rate. Intervals are therefore calculated as `ARR = 10 * interval_ms - 1`.
+
+### Usage
+In `main.c`, initialise the timer with:
+```c
+Timer_Init(1000, led_callback); // 1Hz blink rate
+Timer_Start();
+```
+
+To dynamically update the timer period:
+```c
+Timer_SetPeriod(100); // Change to 10Hz
+```
+To retrieve the current timer period:
+```c
+uint32_t current = Timer_GetPeriod();
+```
+To trigger a one-shot event after a delay:
+```c
+Timer_OneShot(5000, led_oneshot_callback); // Trigger after 5s
+```
+
+### Functions & Modularity
+*timers.c / timers.h*
+- **Timer_Init(interval_ms, callback)**: Configures TIM2 with the given interval (in ms) and links it to a callback function using a function pointer.
+- **Timer_Start()**: Starts TIM2.
+- **Timer_SetPeriod(new_interval_ms)**: Updates ARR with a new period while keeping the count and prescaler intact.
+- **Timer_GetPeriod()**: Returns the current period in milliseconds.
+- **Timer_OneShot(delay_ms, callback)**: Sets up a one-off timer event. After the delay, the callback is triggered and the timer stops itself.
+- **TIM2_IRQHandler()**: Checks the UIF flag, clears it, and calls the registered callback. If in one-shot mode, it disables the interrupt and clears the callback.
+
+All internal variables (e.g. timer_callback, oneshot_enabled) are declared static for encapsulation.
+
+### Testing
+- Observe regular LED blinking for a known interval (e.g. 1Hz)
+- Call Timer_SetPeriod() during runtime and verify the change in LED blink frequency
+- Use Timer_OneShot() and verify that the LEDs only trigger once after the delay
+- Attempt triggering another Timer_OneShot() while one is active to test robustness
+
+
 ## Integration
 All the modules culminate into the integration file, which showcases how the modules can be used as one cohesive program. 
 ### Usage
