@@ -14,7 +14,7 @@
 
 // Defining constants
 #define TERMINATOR '\0'
-#define BUFFER_SIZE 64
+#define BUFFER_SIZE 8
 
 volatile uint8_t rx_buffer[BUFFER_SIZE];
 

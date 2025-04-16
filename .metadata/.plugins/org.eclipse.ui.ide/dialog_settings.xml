@@ -9,6 +9,10 @@
 		<item key="SmartImportRootWizardPage.STORE_NESTED_PROJECTS" value="true"/>
 		<item key="SmartImportRootWizardPage.STORE_CONFIGURE_NATURES" value="true"/>
 		<list key="org.eclipse.ui.internal.wizards.datatransfer.SmartImportRootWizardPage.knownSources">
+			<item value="C:\Users\ethan\OneDrive\Documents\uni\Subjects\Third Year\MTRX2700\NEA\C_Lab\timers"/>
+			<item value="C:\Users\ethan\OneDrive\Documents\uni\Subjects\Third Year\MTRX2700\NEA\C_Lab\digitalIO"/>
+			<item value="C:\Users\ethan\OneDrive\Documents\uni\Subjects\Third Year\MTRX2700\NEA\C_Lab\serial_interface"/>
+			<item value="C:\Users\ethan\OneDrive\Documents\uni\Subjects\Third Year\MTRX2700\NEA\C_Lab\Integration Final"/>
 			<item value="C:\Users\ethan\OneDrive\Documents\uni\Subjects\Third Year\MTRX2700\NEA\serial_interface"/>
 		</list>
 	</section>

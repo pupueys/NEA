@@ -23,9 +23,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, DATA
   9 .ccmram       00000000  10000000  10000000  00002090  2**0
                   CONTENTS
- 10 .bss          000001a8  20000090  20000090  00002090  2**2
+ 10 .bss          00000170  20000090  20000090  00002090  2**2
                   ALLOC
- 11 ._user_heap_stack 00000600  20000238  20000238  00002090  2**0
+ 11 ._user_heap_stack 00000600  20000200  20000200  00002090  2**0
                   ALLOC
  12 .ARM.attributes 00000030  00000000  00000000  00002090  2**0
                   CONTENTS, READONLY
@@ -41,13 +41,13 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  18 .debug_line   00001c2b  00000000  00000000  0001a23c  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    000768a3  00000000  00000000  0001be67  2**0
+ 19 .debug_str    000768a2  00000000  00000000  0001be67  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .comment      00000043  00000000  00000000  0009270a  2**0
+ 20 .comment      00000043  00000000  00000000  00092709  2**0
                   CONTENTS, READONLY
- 21 .debug_frame  000005e0  00000000  00000000  00092750  2**2
+ 21 .debug_frame  000005e0  00000000  00000000  0009274c  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 22 .debug_line_str 00000087  00000000  00000000  00092d30  2**0
+ 22 .debug_line_str 00000087  00000000  00000000  00092d2c  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -514,7 +514,7 @@ void tx_function(SerialPort *serial_port) {
 
 08000438 <rx_complete>:
 #define TERMINATOR '\0'
-#define BUFFER_SIZE 64
+#define BUFFER_SIZE 8
 
 volatile uint8_t rx_buffer[BUFFER_SIZE];
 
@@ -560,15 +560,15 @@ int main(void)
  800046e:	b082      	sub	sp, #8
  8000470:	af00      	add	r7, sp, #0
 
-	bool polling_flag = true;
- 8000472:	2301      	movs	r3, #1
+	bool polling_flag = false;
+ 8000472:	2300      	movs	r3, #0
  8000474:	71fb      	strb	r3, [r7, #7]
 
  	SerialInitialise(BUFFER_SIZE, BAUD_115200, &USART1_PORT, &rx_complete);
  8000476:	4b0c      	ldr	r3, [pc, #48]	@ (80004a8 <main+0x3c>)
  8000478:	4a0c      	ldr	r2, [pc, #48]	@ (80004ac <main+0x40>)
  800047a:	2104      	movs	r1, #4
- 800047c:	2040      	movs	r0, #64	@ 0x40
+ 800047c:	2008      	movs	r0, #8
  800047e:	f000 f819 	bl	80004b4 <SerialInitialise>
 
  	if (polling_flag == false) {
@@ -590,7 +590,7 @@ int main(void)
  8000498:	d0fc      	beq.n	8000494 <main+0x28>
 			SerialReceiveString(rx_buffer, &USART1_PORT, BUFFER_SIZE, TERMINATOR);
  800049a:	2300      	movs	r3, #0
- 800049c:	2240      	movs	r2, #64	@ 0x40
+ 800049c:	2208      	movs	r2, #8
  800049e:	4903      	ldr	r1, [pc, #12]	@ (80004ac <main+0x40>)
  80004a0:	4803      	ldr	r0, [pc, #12]	@ (80004b0 <main+0x44>)
  80004a2:	f000 f8b7 	bl	8000614 <SerialReceiveString>
@@ -1011,8 +1011,8 @@ void *_sbrk(ptrdiff_t incr)
  80006da:	bd80      	pop	{r7, pc}
  80006dc:	2000a000 	.word	0x2000a000
  80006e0:	00000400 	.word	0x00000400
- 80006e4:	200000ec 	.word	0x200000ec
- 80006e8:	20000238 	.word	0x20000238
+ 80006e4:	200000b4 	.word	0x200000b4
+ 80006e8:	20000200 	.word	0x20000200
 
 080006ec <Reset_Handler>:
 
@@ -1109,7 +1109,7 @@ LoopForever:
   ldr r2, =_sbss
  8000734:	20000090 	.word	0x20000090
   ldr r4, =_ebss
- 8000738:	20000238 	.word	0x20000238
+ 8000738:	20000200 	.word	0x20000200
 
 0800073c <ADC1_2_IRQHandler>:
  * @retval : None
@@ -1157,7 +1157,7 @@ Infinite_Loop:
  800078a:	d1f2      	bne.n	8000772 <sbrk_aligned+0x22>
  800078c:	e7ef      	b.n	800076e <sbrk_aligned+0x1e>
  800078e:	bf00      	nop
- 8000790:	200000f0 	.word	0x200000f0
+ 8000790:	200000b8 	.word	0x200000b8
 
 08000794 <_malloc_r>:
  8000794:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
@@ -1267,19 +1267,19 @@ Infinite_Loop:
  800088a:	6005      	str	r5, [r0, #0]
  800088c:	e7d6      	b.n	800083c <_malloc_r+0xa8>
  800088e:	bf00      	nop
- 8000890:	200000f4 	.word	0x200000f4
+ 8000890:	200000bc 	.word	0x200000bc
 
 08000894 <__malloc_lock>:
  8000894:	4801      	ldr	r0, [pc, #4]	@ (800089c <__malloc_lock+0x8>)
  8000896:	f000 b843 	b.w	8000920 <__retarget_lock_acquire_recursive>
  800089a:	bf00      	nop
- 800089c:	20000234 	.word	0x20000234
+ 800089c:	200001fc 	.word	0x200001fc
 
 080008a0 <__malloc_unlock>:
  80008a0:	4801      	ldr	r0, [pc, #4]	@ (80008a8 <__malloc_unlock+0x8>)
  80008a2:	f000 b83e 	b.w	8000922 <__retarget_lock_release_recursive>
  80008a6:	bf00      	nop
- 80008a8:	20000234 	.word	0x20000234
+ 80008a8:	200001fc 	.word	0x200001fc
 
 080008ac <_sbrk_r>:
  80008ac:	b538      	push	{r3, r4, r5, lr}
@@ -1295,7 +1295,7 @@ Infinite_Loop:
  80008c2:	b103      	cbz	r3, 80008c6 <_sbrk_r+0x1a>
  80008c4:	6023      	str	r3, [r4, #0]
  80008c6:	bd38      	pop	{r3, r4, r5, pc}
- 80008c8:	20000230 	.word	0x20000230
+ 80008c8:	200001f8 	.word	0x200001f8
 
 080008cc <__errno>:
  80008cc:	4b01      	ldr	r3, [pc, #4]	@ (80008d4 <__errno+0x8>)

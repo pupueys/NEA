@@ -1,10 +1,24 @@
 # MTRX2700 C Lab
-*by Nadeen, Ethan and Anikan
+*by Nadeen, Ethan and Anikan*
 # Project Overview
 The MTRX2700 C Lab is an application of the knowledge gained from MTRX2700 - Mechatronics 2. The various submodules in this repo demonstrate the functions of the STM32F3 microcontroller including GPIO, UART, hardware timers, etc. These submodules were integrated together to show all of these features working at once in a simple program. . All the tasks were coded using C programming language. This repository contains all the code we wrote, alongside the minutes of the meetings we had throughout the project. This readme should guide one through the process of using, testing, and understanding all code in our codebase. Our code was written with a focus on modularity, in order for integration to be easier at the end.
 
 Everything was written for and intended for the STM32F3 Discovery Board which utilises the Cortex-M3 ARM processor, and as such, everything is intended for only such hardware.
 
+# Roles and Responsibilities
+---
+The following were the task allocations for the team
+- *Digital I/O*: Nadeen 
+- *Serial Interface*: Ethan
+- *Timers*: Anikan
+- *Integration*: Everyone
+
+# Repo Workflow and Convention
+---
+Each member separately worked on their allocated tasks, meeting 
+up regularly to check on task progress, and once complete, a meeting was held for integration. 
+
+The program files can be found in the `C_Lab` folder and were named after their respective functionality. The minutes can be found in the `Meeting Minutes` folder.
 
 # Modules and Submodules
 ## 1.Digital I/O module to interface LEDs and Button
@@ -94,6 +108,7 @@ Individual Module testing for each module is given bellow,
 - Use `set_led_state` to set a random pattern of LEDs and make sure it is reflected at the start of the program.
 
 ## Serial Interface
+---
 For this section, `serial.c` and the corresponding `serial.h` from W06-modular-example was used as a baseline. 
 
 ### Set-up
@@ -113,7 +128,8 @@ Messages are received until a user defined terminating character is received, wh
 
 Essentially, the polling mode "waits" for a character to be received into the recieve data register (RDR), i.e. undergoes an infinite `while` loop until data is received. Once data is received, it is stored into the global receive buffer `rx_buffer` and checks for the terminating character. Note that the size of `rx_buffer` is defind by `BUFFER_SIZE` in `main.c`  which can be changed. If the terminating character is reached, it ends the receiving loop and returns to a callback function. Otherwise, the program remains in the programming loop. 
 
-To deactivate the polling mode, set `polling_flag = false` in `main.c`. This disables the `SerialReceiveString` function and instead now the program relies on interrupts to receive data. In this case, the double buffers within the `SerialPort` struct are used, switching modes every time a full string is received. More specifically, there are two buffers in the `SerialPort` struct, denoted `buffer` and `second_buffer`. Initially, data is read into `buffer` until a terminating character is received. Once the terminating character is received, the two buffers are "swapped" and now the `second_buffer` is used to receive any new characters. In the meantime, the data in `buffer` can be used for other routines such as parsing, transmission, etc. 
+To deactivate the polling mode, set `polling_flag = false` in `main.c`. This disables the `SerialReceiveString` function and instead now the program relies on interrupts to receive data. In this case, the double buffers within the `SerialPort` struct are used, switching modes every time a full string is received. More specifically, there are two buffers in the `SerialPort` struct, denoted `buffer` and `second_buffer`. Initially, data is read into `buffer` until a terminating character is received. Once the terminating character is received, the two buffers are "swapped" and now the `second_buffer` is used to receive any new characters. In the meantime, the data in `buffer` can be used for other routines such as parsing, transmission, etc.  
+Furthermore, if the buffer is filled, the null terminator is appended and receiving ends. More specificially, if the penultimate byte of the buffer is reached, the null terminating character `\0` is appended and receiving is ended. If there is still data to receive, this will now be received in the second buffer.
 
 ### The Double Buffers
 As mentioned, double buffers are used to allow multiple actions to occur at once, e.g. receiving and manipluating two different buffers. These are stored as elements of the `SerialPort` struct, and have a user-defined buffer size which is mediated by `malloc` to initialise. 
