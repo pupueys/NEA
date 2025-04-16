@@ -14,6 +14,8 @@
 #define TERMINATOR '!'
 #define BUFFER_SIZE 64
 
+volatile uint8_t rx_buffer[BUFFER_SIZE];
+
 void rx_complete(uint8_t *pt, uint32_t counter) {
 	// This function will be called after a transmission is complete
 
@@ -27,10 +29,14 @@ void rx_complete(uint8_t *pt, uint32_t counter) {
 int main(void)
 {
 
+	bool polling_flag = true;
+
  	SerialInitialise(BUFFER_SIZE, BAUD_115200, &USART1_PORT, &rx_complete);
 
     /* Loop forever */
 	for(;;) {
-//		SerialReceiveString(rx_buffer, &USART1_PORT, BUFFER_SIZE, TERMINATOR);
+		if (polling_flag == true) {
+			SerialReceiveString(rx_buffer, &USART1_PORT, BUFFER_SIZE, TERMINATOR);
+		}
 	}
 }

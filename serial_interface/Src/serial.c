@@ -111,6 +111,7 @@ void SerialOutputChar(uint8_t data, SerialPort *serial_port) {
 	while((serial_port->UART->ISR & USART_ISR_TXE) == 0){
 	}
 
+	// outputting the data
 	serial_port->UART->TDR = data;
 }
 
@@ -119,6 +120,8 @@ void SerialOutputChar(uint8_t data, SerialPort *serial_port) {
 void SerialOutputString(uint8_t *pt, SerialPort *serial_port) {
 
 	uint32_t counter = 0;
+
+	//  outputting while there is still data to output
 	while(*pt) {
 		SerialOutputChar(*pt, serial_port);
 		counter++;
@@ -132,20 +135,22 @@ void SerialReceiveChar(uint8_t *pt, SerialPort *serial_port) {
 	while((serial_port->UART->ISR & USART_ISR_RXNE) == 0){
 	}
 
+	// receiving a character into the buffer
 	*pt = (uint8_t)(serial_port->UART->RDR);
 
 }
-
 
 void SerialReceiveString(uint8_t *buffer,
 						 SerialPort *serial_port,
 						 uint8_t buffer_size,
 						 uint8_t terminator) {
 
-    uint8_t *buffer_base = buffer;
-    uint32_t counter = 0;
+	// Initialising variables for receiving
+    uint8_t *buffer_base = buffer;		// to return to the beginning of the pointer 
+    uint32_t counter = 0;					
     uint8_t received_char;
 
+	// receive while there is no terminating character
     do {
         SerialReceiveChar(&received_char, serial_port);
         *buffer = received_char;
@@ -153,6 +158,7 @@ void SerialReceiveString(uint8_t *buffer,
         counter++;
         buffer++;
 
+		// overwrite when buffer is filled
         if (counter == buffer_size) {
             buffer = buffer_base;
             counter = 0;
@@ -160,8 +166,10 @@ void SerialReceiveString(uint8_t *buffer,
 
     } while (received_char != terminator);
 
+	// reset the buffer
     buffer = buffer_base;
 
+	// return to callback function
     serial_port->callback(buffer, counter);
 }
 

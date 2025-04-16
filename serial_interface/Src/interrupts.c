@@ -4,10 +4,6 @@
 
 void USART1_EXTI25_IRQHandler(void) {
 
-	/*  Handler for the USART1 interrupts
-	 *  Activates rx_function if interrupt is triggered
-	 	Activates tx_function when transmit interrupt is triggered */
-
 	// when interrupt is reached, call the rx_function
 	rx_function(&USART1_PORT);
 
@@ -18,10 +14,6 @@ void USART1_EXTI25_IRQHandler(void) {
 }
 
 void rx_function(SerialPort *serial_port) {
-
-	/* This function is called when the RXNE interrupt is triggered.
-	 * If the buffer is filled, the double buffers will switch, with the second buffer
-	 * being able to receive, while the other buffer can be used */
 
 	// checking if receiving is working properly
 	if (!((serial_port->UART->ISR & USART_ISR_RXNE) == 0) &&
@@ -61,7 +53,7 @@ void rx_function(SerialPort *serial_port) {
 }
 
 void tx_enable(bool flag, SerialPort *serial_port) {
-	/* Given a flag, the transmission interrupt will be enabled/disabled */
+
 	__disable_irq();
 
 	if (flag == true) {
@@ -76,15 +68,13 @@ void tx_enable(bool flag, SerialPort *serial_port) {
 void tx_string(uint8_t *str, SerialPort *serial_port) {
 
 	serial_port->TxPointer = str;
+
+	// enable the transmittion interrupts if there is a string to transmit.
 	tx_enable(true, serial_port);
 
 }
 
 void tx_function(SerialPort *serial_port) {
-
-	/* This function is called when the TXE interrupt is enabled.
-	   If this was triggered intentionally, a character will be placed in the TDR
-	 */
 
 	// checking for terminating character
 	if (serial_port->TxPointer == TERMINATOR) {
@@ -92,8 +82,6 @@ void tx_function(SerialPort *serial_port) {
 		serial_port->UART->TDR = TERMINATOR;
 		tx_enable(false, serial_port);
 	}
-
-
 
 	// transmit character
 	serial_port->UART->TDR = *serial_port->TxPointer;
