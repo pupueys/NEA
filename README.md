@@ -111,12 +111,13 @@ The program utilises USART1 on the STM32F3 to communicate with a computer via a 
 
 Messages are received until a user defined terminating character is received, which is `\0` by default (the null character). To set this terminating character, change the definition of `TERMINATOR` in `main.c`, i.e. `#define TERMINATOR '\0'` such that `TERMINATOR` is the desired terminating character, e.g. if the terminating character is to be set as '!', the line should read `#define TERMINATOR '!'`. 
 
-Essentially, the polling mode "waits" for a character to be received into the recieve data register (RDR), i.e. undergoes an infinite `while` loop until data is received. Once data is received, it is stored into the receive buffer and checks for the terminating character. If the terminating character is reached, it ends the receiving loop and returns to a callback function. Otherwise, the program remains in the programming loop. 
+Essentially, the polling mode "waits" for a character to be received into the recieve data register (RDR), i.e. undergoes an infinite `while` loop until data is received. Once data is received, it is stored into the global receive buffer `rx_buffer` and checks for the terminating character. Note that the size of `rx_buffer` is defind by `BUFFER_SIZE` in `main.c`  which can be changed. If the terminating character is reached, it ends the receiving loop and returns to a callback function. Otherwise, the program remains in the programming loop. 
 
 To deactivate the polling mode, set `polling_flag = false` in `main.c`. This disables the `SerialReceiveString` function and instead now the program relies on interrupts to receive data. In this case, the double buffers within the `SerialPort` struct are used, switching modes every time a full string is received. More specifically, there are two buffers in the `SerialPort` struct, denoted `buffer` and `second_buffer`. Initially, data is read into `buffer` until a terminating character is received. Once the terminating character is received, the two buffers are "swapped" and now the `second_buffer` is used to receive any new characters. In the meantime, the data in `buffer` can be used for other routines such as parsing, transmission, etc. 
 
 ### The Double Buffers
-As mentioned, double buffers are used to allow multiple actions to occur at once, e.g. receiving and manipluating two different buffers. These are stored as elements of the `SerialPort` struct, and have a user-defined buffer size which is mediated by `malloc` to initialise.
+As mentioned, double buffers are used to allow multiple actions to occur at once, e.g. receiving and manipluating two different buffers. These are stored as elements of the `SerialPort` struct, and have a user-defined buffer size which is mediated by `malloc` to initialise. 
+To define the buffer size, change the value of `BUFFER_SIZE` in `main.c`.
 
 ### Transmit Functionality
 Similarly to Receive Functionality, the program uses USART1 to communicate via serial. There are also two modes; transmission via polling and transmission via interrupts.
@@ -152,18 +153,21 @@ All the modules culminate into the integration file, which showcases how the mod
 ### Usage
 
 The user inputs one of the following commands into the terminal:
-- led {insert 8-bit binary LED bitmask} (e.g. led 01010101)
-- serial {insert string here} (e.g. serial Hello, World!)
-- oneshot {insert time in ms}
-- timer {insert time in ms}
+- led {insert 8-bit binary LED bitmask} (e.g. `led 01010101`)
+- serial {insert string here} (e.g. `serial Hello, World!`)
+- oneshot {insert time in ms} (e.g. `oneshot 5000`)
+- timer {insert time in ms} (e.g. `timer 1000`)
 
 These inputs must all follow the syntax provided, otherwise no output will occur. The inputs must be appended with the null terminating character `\0`. 
 
+### Parsing
+The program is quite particular about the input argument. As previously stated, the arguments have to follow the exact syntax provided, or else there will be no output. This is due to the parsing utilising `strncmp` to check whether the first argument of the input is valid, i.e. if it is `led`, `serial`, `timer` or `oneshot`. It particularly checks if there is a space after the first argument. If there is no space, then the program will have no output.
+
 ### Functionality
+**LED Mode**: The LEDs will display according to the set bitmask, starting from the North-West LED.
 
+**Serial Mode**: The STM32 will transmit the input string back to the terminal.
 
+**Oneshot Mode**: The LEDs on the STM32 will turn on once the oneshot timer is complete, e.g. if the argument is 5000, the lights will turn on after 5000ms.
 
-
-
-## Serial Interface
-For this section, `serial.c` and the corresponding `serial.h` was used as a baseline. 
+**Timer Mode**: The LEDs on the STM32 will flash according to the time set by the argument, e.g. if the argument is 1000, the LEDs will flash every 1000ms.
