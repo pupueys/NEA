@@ -13,6 +13,21 @@ void USART1_EXTI25_IRQHandler(void) {
 	}
 }
 
+void rx_enable(SerialPort *serial_port) {
+
+	__disable_irq(); // disable all interrupts while changing settings
+
+	// enabling the interrupts
+	serial_port->UART->CR1 |= USART_CR1_RXNEIE;		// enabling RXNE interrupts
+	serial_port->UART->CR3 |= USART_CR3_EIE;		// enabling the error interrupts
+
+	// activating interrupts and setting priority
+	NVIC_SetPriority(serial_port->UART_IRQn, 5);
+	NVIC_EnableIRQ(serial_port->UART_IRQn);			//  enable UART interrupts
+
+	__enable_irq(); // re-enable all interrupts
+}
+
 void rx_function(SerialPort *serial_port) {
 
 	// checking if receiving is working properly
@@ -40,7 +55,7 @@ void rx_function(SerialPort *serial_port) {
 			serial_port->SecondBuffer = temp_pt;
 
 			// callback with the first buffer since the first buffer is finished reading
-			serial_port->callback(serial_port->SecondBuffer, serial_port->Count);
+			serial_port->callback(temp_pt, serial_port->Count);
 			serial_port->Count = 0;
 		}
 
@@ -52,30 +67,14 @@ void rx_function(SerialPort *serial_port) {
 
 }
 
-void rx_enable(SerialPort *serial_port) {
-
-	__disable_irq(); // disable all interrupts while changing settings
-
-	// enabling the interrupts
-	serial_port->UART->CR1 |= USART_CR1_RXNEIE;		// enabling RXNE interrupts
-	serial_port->UART->CR3 |= USART_CR3_EIE;		// enabling the error interrupts
-
-	// activating interrupts and setting priority
-	NVIC_SetPriority(serial_port->UART_IRQn, 5);
-	NVIC_EnableIRQ(serial_port->UART_IRQn);			//  enable UART interrupts
-
-	__enable_irq(); // re-enable all interrupts
-}
-
 void tx_enable(bool flag, SerialPort *serial_port) {
 
 	__disable_irq();
 
-	// enabling the TXEIE interrupt if transmission is enabled
 	if (flag == true) {
 		serial_port->UART->CR1 |= USART_CR1_TXEIE;
 	} else {
-		serial_port->UART->CR1 &= ~USART_CR1_TXEIE;	// ANDing with compliment to disable
+		serial_port->UART->CR1 |= ~USART_CR1_TXEIE;
 	}
 
 	__enable_irq();
@@ -102,3 +101,5 @@ void tx_function(SerialPort *serial_port) {
 	serial_port->UART->TDR = *serial_port->TxPointer;
 	serial_port->TxPointer++;
 }
+
+

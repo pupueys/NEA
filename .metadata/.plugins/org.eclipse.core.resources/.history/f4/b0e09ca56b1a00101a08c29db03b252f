@@ -20,7 +20,8 @@ volatile uint8_t rx_buffer[BUFFER_SIZE];
 
 void rx_complete(volatile uint8_t* pt, uint32_t counter) {
 	// This function will be called after a transmission is complete
-	tx_string(pt, &USART1_PORT);
+
+	tx_string(*pt, &USART1_PORT);
 
 //	volatile uint32_t test = 0;
 //	// make a very simple delay

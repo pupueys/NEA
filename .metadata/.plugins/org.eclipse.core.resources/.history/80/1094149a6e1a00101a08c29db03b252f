@@ -134,7 +134,7 @@ void SerialReceiveString(uint8_t *buffer,
 						 uint8_t terminator) {
 
 	// Initialising variables for receiving
-    uint8_t *buffer_base = buffer;		// to return to the beginning of the pointer
+    uint8_t buffer_base = buffer;		// to return to the beginning of the pointer
     uint32_t counter = 0;					
     uint8_t received_char;
 

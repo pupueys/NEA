@@ -52,21 +52,6 @@ void rx_function(SerialPort *serial_port) {
 
 }
 
-void rx_enable(SerialPort *serial_port) {
-
-	__disable_irq(); // disable all interrupts while changing settings
-
-	// enabling the interrupts
-	serial_port->UART->CR1 |= USART_CR1_RXNEIE;		// enabling RXNE interrupts
-	serial_port->UART->CR3 |= USART_CR3_EIE;		// enabling the error interrupts
-
-	// activating interrupts and setting priority
-	NVIC_SetPriority(serial_port->UART_IRQn, 5);
-	NVIC_EnableIRQ(serial_port->UART_IRQn);			//  enable UART interrupts
-
-	__enable_irq(); // re-enable all interrupts
-}
-
 void tx_enable(bool flag, SerialPort *serial_port) {
 
 	__disable_irq();
