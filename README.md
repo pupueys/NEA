@@ -236,7 +236,7 @@ These inputs must all follow the syntax provided, otherwise no output will occur
 The program is quite particular about the input argument. As previously stated, the arguments have to follow the exact syntax provided, or else there will be no output. This is due to the parsing utilising `strncmp` to check whether the first argument of the input is valid, i.e. if it is `led`, `serial`, `timer` or `oneshot`. It particularly checks if there is a space after the first argument. If there is no space, then the program will have no output.
 
 ### Functionality
-**LED Mode**: The LEDs will display according to the set bitmask, starting from the North-West LED.
+**LED Mode**: The LEDs will display according to the set bitmask, starting from the North-West LED.The file that handles the led functions is digital_io.c. First it enables the peripheral clocks for input and output. Then led case function is used to convert the incoming charecters to binary values which can be used in set_led_state function. These converted led pattern is then passed into set_led_state function which updates the led_state with the input of the function and stores it back to ODR.
 
 **Serial Mode**: The STM32 will transmit the input string back to the terminal.
 
