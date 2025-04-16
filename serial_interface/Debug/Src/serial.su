@@ -1,7 +1,0 @@
-../Inc/core_cm4.h:1688:22:__NVIC_EnableIRQ	16	static
-../Inc/core_cm4.h:1816:22:__NVIC_SetPriority	16	static
-../Src/serial.c:28:6:SerialInitialise	32	static,ignoring_inline_asm
-../Src/serial.c:109:6:SerialOutputChar	16	static
-../Src/serial.c:119:6:SerialOutputString	24	static
-../Src/serial.c:130:6:SerialReceiveChar	16	static
-../Src/serial.c:140:6:SerialReceiveString	40	static

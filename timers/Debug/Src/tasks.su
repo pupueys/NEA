@@ -1,6 +1,0 @@
-../Inc/core_cm4.h:1688:22:__NVIC_EnableIRQ	16	static
-../Src/tasks.c:12:6:Timer_Init	16	static
-../Src/tasks.c:33:6:Timer_SetPeriod	16	static
-../Src/tasks.c:39:10:Timer_GetPeriod	4	static
-../Src/tasks.c:44:6:Timer_OneShot	16	static
-../Src/tasks.c:53:6:TIM2_IRQHandler	8	static

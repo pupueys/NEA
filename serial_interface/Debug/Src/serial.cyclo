@@ -1,7 +1,0 @@
-../Inc/core_cm4.h:1688:22:__NVIC_EnableIRQ	2
-../Inc/core_cm4.h:1816:22:__NVIC_SetPriority	2
-../Src/serial.c:28:6:SerialInitialise	6
-../Src/serial.c:109:6:SerialOutputChar	2
-../Src/serial.c:119:6:SerialOutputString	2
-../Src/serial.c:130:6:SerialReceiveChar	2
-../Src/serial.c:140:6:SerialReceiveString	3

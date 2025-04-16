@@ -1,2 +1,0 @@
-../Src/set_get_leds.c:9:9:get_led_state	4	static
-../Src/set_get_leds.c:14:6:set_led_state	16	static
